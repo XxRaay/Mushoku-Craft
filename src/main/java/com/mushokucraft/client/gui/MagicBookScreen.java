@@ -50,10 +50,12 @@ extends Screen {
         int bookHeight = 247;
         int x = (this.width - bookWidth) / 2;
         int y = (this.height - bookHeight) / 2;
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(0.0f, 0.0f, 50.0f);
         guiGraphics.blit(ResourceLocation.fromNamespaceAndPath((String)"mushokucraft", (String)("textures/gui/spell_" + this.spellId + ".png")), x + 18, y + 20, 0.0f, 0.0f, 48, 48, 48, 48);
         MutableComponent school = Component.translatable((String)("gui.mushokucraft." + this.elementPrefix + "_magic_book.school"));
         guiGraphics.pose().pushPose();
-        guiGraphics.pose().scale(0.9f, 0.9f, 0.9f);
+        guiGraphics.pose().scale(0.9f, 0.9f, 1.0f);
         guiGraphics.drawString(this.font, (Component)school, (int)((float)(x + 72) / 0.9f), (int)((float)(y + 25) / 0.9f), 0xFF2E1A0B, false);
         guiGraphics.pose().popPose();
         MutableComponent spellName = Component.translatable((String)("gui.mushokucraft." + this.elementPrefix + "_magic_book.spell_name"));
@@ -61,9 +63,10 @@ extends Screen {
         MutableComponent desc1 = Component.translatable((String)("gui.mushokucraft." + this.elementPrefix + "_magic_book.desc1"));
         MutableComponent desc2 = Component.translatable((String)("gui.mushokucraft." + this.elementPrefix + "_magic_book.desc2"));
         guiGraphics.pose().pushPose();
-        guiGraphics.pose().scale(0.9f, 0.9f, 0.9f);
+        guiGraphics.pose().scale(0.9f, 0.9f, 1.0f);
         guiGraphics.drawString(this.font, (Component)desc1, (int)((float)(x + 18) / 0.9f), (int)((float)(y + 85) / 0.9f), 0xFF1F1710, false);
         guiGraphics.drawString(this.font, (Component)desc2, (int)((float)(x + 18) / 0.9f), (int)((float)(y + 98) / 0.9f), 0xFF1F1710, false);
+        guiGraphics.pose().popPose();
         guiGraphics.pose().popPose();
     }
 
