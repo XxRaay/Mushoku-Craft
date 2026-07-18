@@ -1,0 +1,30 @@
+{
+  "parent": "mushokucraft:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:iron_sword"
+    },
+    "title": {
+      "translate": "advancement.mushokucraft.style_sword_god.title"
+    },
+    "description": {
+      "translate": "advancement.mushokucraft.style_sword_god.desc"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "deal_high_damage": {
+      "trigger": "minecraft:player_hurt_entity",
+      "conditions": {
+        "damage": {
+          "dealt": {
+            "min": 24.0
+          }
+        }
+      }
+    }
+  }
+}

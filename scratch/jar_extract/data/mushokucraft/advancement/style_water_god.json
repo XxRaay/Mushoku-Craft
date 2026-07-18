@@ -1,0 +1,23 @@
+{
+  "parent": "mushokucraft:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:shield"
+    },
+    "title": {
+      "translate": "advancement.mushokucraft.style_water_god.title"
+    },
+    "description": {
+      "translate": "advancement.mushokucraft.style_water_god.desc"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "block_damage": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

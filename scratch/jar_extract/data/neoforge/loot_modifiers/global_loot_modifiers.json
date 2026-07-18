@@ -1,0 +1,27 @@
+{
+  "replace": false,
+  "entries": [
+    "mushokucraft:water_book_dungeon",
+    "mushokucraft:water_book_mineshaft",
+    "mushokucraft:water_book_stronghold_library",
+    "mushokucraft:water_book_desert_pyramid",
+    "mushokucraft:water_book_jungle_temple",
+    "mushokucraft:water_book_woodland_mansion",
+    "mushokucraft:water_book_pillager_outpost",
+    "mushokucraft:fire_book_dungeon",
+    "mushokucraft:fire_book_mineshaft",
+    "mushokucraft:fire_book_stronghold_library",
+    "mushokucraft:fire_book_desert_pyramid",
+    "mushokucraft:fire_book_jungle_temple",
+    "mushokucraft:fire_book_woodland_mansion",
+    "mushokucraft:fire_book_pillager_outpost",
+    "mushokucraft:earth_book_dungeon",
+    "mushokucraft:earth_book_mineshaft",
+    "mushokucraft:earth_book_stronghold_library",
+    "mushokucraft:earth_book_desert_pyramid",
+    "mushokucraft:earth_book_jungle_temple",
+    "mushokucraft:earth_book_woodland_mansion",
+    "mushokucraft:earth_book_pillager_outpost",
+    "mushokucraft:sword_god_scroll_end_city"
+  ]
+}

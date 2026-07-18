@@ -1,0 +1,23 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"northgod": {
+			"loop": true,
+			"bones": {
+				"rightArm": {
+					"rotation": {
+						"vector": [-57.5, 0, 0]
+					}
+				},
+				"sword": {
+					"rotation": {
+						"vector": [40, 0, 0]
+					},
+					"position": {
+						"vector": [0, 1, 0]
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+  "type": "mushokucraft:add_item",
+  "conditions": [
+    {
+      "condition": "minecraft:random_chance",
+      "chance": 0.10
+    },
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/pillager_outpost"
+    }
+  ],
+  "item": {
+    "id": "mushokucraft:fire_magic_book",
+    "count": 1
+  }
+}

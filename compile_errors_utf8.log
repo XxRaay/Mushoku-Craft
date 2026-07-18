@@ -1,0 +1,109 @@
+﻿To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+Architect Plugin: 3.4.164
+Architectury Loom: 1.7.435
+You are using an outdated version of Architectury Loom! This version will not receive any support, please consider updating!
+
+> Task :common:compileJava FAILED
+.\gradlew.bat : D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\LearningManager.java:112: err
+or: illegal start of type
+строка:1 знак:1
++ .\gradlew.bat :common:compileJava --continue > compile_errors.log 2>& ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (D:\Projects\jav...l start of type:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+        if (event.getEntity() instanceof ServerPlayer player) {
+        ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\LearningManager.java:112: error: <identifier>
+ expected
+        if (event.getEntity() instanceof ServerPlayer player) {
+                           ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\LearningManager.java:112: error: ';' expected
+        if (event.getEntity() instanceof ServerPlayer player) {
+                             ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\LearningManager.java:171: error: class, inter
+face, enum, or record expected
+        learningTasks.remove(event.getEntity().getUUID());
+        ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\LearningManager.java:172: error: class, inter
+face, enum, or record expected
+    }
+    ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerCastManager.java:87: error: illegal sta
+rt of type
+        while (iterator.hasNext()) {
+        ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerCastManager.java:87: error: <identifier
+> expected
+        while (iterator.hasNext()) {
+                               ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerCastManager.java:87: error: ';' expecte
+d
+        while (iterator.hasNext()) {
+                                 ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerCastManager.java:156: error: class, int
+erface, enum, or record expected
+        activeCasts.remove(event.getEntity().getUUID());
+        ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerCastManager.java:157: error: class, int
+erface, enum, or record expected
+    }
+    ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerCastManager.java:178: error: class, int
+erface, enum, or record expected
+}
+^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerChargeManager.java:237: error: illegal 
+start of type
+        if (event.getEntity() instanceof ServerPlayer player) {
+        ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerChargeManager.java:237: error: <identif
+ier> expected
+        if (event.getEntity() instanceof ServerPlayer player) {
+                           ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerChargeManager.java:237: error: ';' expe
+cted
+        if (event.getEntity() instanceof ServerPlayer player) {
+                             ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerChargeManager.java:321: error: class, i
+nterface, enum, or record expected
+        chargingPlayers.remove(event.getEntity().getUUID());
+        ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerChargeManager.java:322: error: class, i
+nterface, enum, or record expected
+        activeSilences.remove(event.getEntity().getUUID());
+        ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerChargeManager.java:323: error: class, i
+nterface, enum, or record expected
+    }
+    ^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerChargeManager.java:353: error: unnamed 
+classes are a preview feature and are disabled by default.
+    private static DashResult performDash(ServerPlayer player, double distance) {
+                   ^
+  (use --enable-preview to enable unnamed classes)
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerChargeManager.java:403: error: class, i
+nterface, enum, or record expected
+}
+^
+D:\Projects\java\MushokuCraft\common\src\main\java\com\mushokucraft\magic\ServerChargeManager.java:1: error: unnamed cl
+ass should not have package declaration
+package com.mushokucraft.magic;
+^
+20 errors
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':common:compileJava'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 22s
+1 actionable task: 1 executed

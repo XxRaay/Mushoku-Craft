@@ -1,0 +1,69 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"parry": {
+			"animation_length": 0.5833,
+			"bones": {
+				"head": {
+					"rotation": {
+						"vector": [0, 0, 0]
+					},
+					"position": {
+						"vector": [0, 0, 0]
+					},
+					"scale": {
+						"vector": [1, 1, 1]
+					}
+				},
+				"body": {
+					"rotation": {
+						"vector": [0, 0, 0]
+					},
+					"position": {
+						"vector": [0, 0, 0]
+					},
+					"scale": {
+						"vector": [1, 1, 1]
+					}
+				},
+				"rightArm": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.25": {
+							"vector": [-57.452, -30.6608, -27.0584]
+						}
+					},
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.25": {
+							"vector": [-1, 0, 0]
+						}
+					},
+					"scale": {
+						"vector": [1, 1, 1]
+					}
+				},
+				"sword": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.25": {
+							"vector": [0, -42.5, 0]
+						}
+					},
+					"position": {
+						"vector": [0, 0, 0]
+					},
+					"scale": {
+						"vector": [1, 1, 1]
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,57 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"cast": {
+			"loop": true,
+			"animation_length": 0.9583,
+			"bones": {
+				"Book": {
+					"rotation": {
+						"vector": [0, 0, 7.5]
+					},
+					"position": {
+						"vector": [-5, 2, 0]
+					}
+				},
+				"spine": {
+					"rotation": {
+						"vector": [0, 80, 0]
+					},
+					"position": {
+						"vector": [5, 0, 3]
+					}
+				},
+				"cover_front": {
+					"rotation": {
+						"vector": [0, 170, 0]
+					},
+					"position": {
+						"vector": [11, 0, 1]
+					}
+				},
+				"pages_left": {
+					"position": {
+						"vector": [0.6, 0, 0]
+					},
+					"scale": {
+						"vector": [1.2, 1, 1]
+					}
+				},
+				"pages_right": {
+					"rotation": {
+						"vector": [0, 170, 0]
+					},
+					"position": {
+						"vector": [10, 0, 1]
+					},
+					"scale": {
+						"vector": [1.2, 1, 1]
+					}
+				}
+			}
+		},
+		"idle": {
+			"animation_length": 0.0417
+		}
+	}
+}
