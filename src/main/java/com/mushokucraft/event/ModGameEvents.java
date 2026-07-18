@@ -68,7 +68,7 @@ public class ModGameEvents {
                 if (ToukiManager.tick(player2, data)) {
                     syncNeeded = true;
                 } else if (data.getMana() < data.getMaxMana() && data.getManaRegenRate() > 0.0f) {
-                    data.regenMana(data.getManaRegenRate());
+                    data.regenMana(data.getManaRegenRate() * 20.0f);
                     syncNeeded = true;
                 }
                 if (syncNeeded) {
