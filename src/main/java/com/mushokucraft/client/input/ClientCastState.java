@@ -78,7 +78,8 @@ public class ClientCastState {
                 }
                 return;
             }
-            if (fizzleTick > 0 && ++elapsedTicks >= fizzleTick) {
+            ++elapsedTicks;
+            if (fizzleTick > 0 && elapsedTicks >= fizzleTick) {
                 ClientCastState.triggerFizzle();
             } else if (elapsedTicks >= totalTicks) {
                 isCasting = false;
