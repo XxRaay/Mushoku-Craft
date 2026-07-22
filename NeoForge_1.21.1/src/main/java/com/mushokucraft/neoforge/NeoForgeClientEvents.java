@@ -20,7 +20,7 @@ public class NeoForgeClientEvents {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 if (this.renderer == null) {
-                    this.renderer = new MagicBookItemRenderer("waterbook", "waterbook", "waterbookl");
+                    this.renderer = new MagicBookItemRenderer("water_magic_book", "water_magic_book", "water_magic_book");
                 }
                 return this.renderer;
             }
@@ -32,7 +32,7 @@ public class NeoForgeClientEvents {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 if (this.renderer == null) {
-                    this.renderer = new MagicBookItemRenderer("pirobook", "pirobook", "pirobookl");
+                    this.renderer = new MagicBookItemRenderer("fire_magic_book", "fire_magic_book", "fire_magic_book");
                 }
                 return this.renderer;
             }
@@ -44,7 +44,7 @@ public class NeoForgeClientEvents {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 if (this.renderer == null) {
-                    this.renderer = new MagicBookItemRenderer("geobook", "geobook", "geobookl");
+                    this.renderer = new MagicBookItemRenderer("earth_magic_book", "earth_magic_book", "earth_magic_book");
                 }
                 return this.renderer;
             }
@@ -56,7 +56,7 @@ public class NeoForgeClientEvents {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 if (this.renderer == null) {
-                    this.renderer = new MagicBookItemRenderer("airbook", "windbook", "windbookl");
+                    this.renderer = new MagicBookItemRenderer("wind_magic_book", "wind_magic_book", "wind_magic_book");
                 }
                 return this.renderer;
             }

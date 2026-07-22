@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:builtin/entity",
   "textures": {
-    "particle": "mushokucraft:item/airbook"
+    "particle": "mushokucraft:item/wind_magic_book"
   }
 }

@@ -2,7 +2,7 @@
   "type": "mushokucraft:add_item",
   "conditions": [
     {
-      "condition": "minecraft:loot_table_id",
+      "condition": "neoforge:loot_table_id",
       "loot_table_id": "minecraft:chests/end_city_treasure"
     },
     {
@@ -10,5 +10,7 @@
       "chance": 0.05
     }
   ],
-  "item": "mushokucraft:sword_god_scroll"
+  "item": {
+    "id": "mushokucraft:sword_god_scroll"
+  }
 }
