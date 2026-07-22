@@ -1,7 +1,0 @@
-{
-  "message_id": "mushokucraft_longsword_silence",
-  "scaling": "never",
-  "exhaustion": 0.1,
-  "effects": "hurt",
-  "death_message_type": "default"
-}

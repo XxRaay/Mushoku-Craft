@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "mushokucraft",
+  "version": "${version}",
+  "name": "Mushoku Craft",
+  "description": "Hardcore RPG mod inspired by Mushoku Tensei. Completely overhauls combat, magic, crafting and world exploration.",
+  "authors": [
+    "XxRaay"
+  ],
+  "contact": {},
+  "license": "All Rights Reserved",
+  "icon": "assets/mushokucraft/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.mushokucraft.fabric.MushokuCraftFabric"
+    ],
+    "client": [
+      "com.mushokucraft.fabric.client.MushokuCraftFabricClient"
+    ]
+  },
+  "mixins": [
+    "mushokucraft.mixins.json",
+    "mushokucraft-common.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.2",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "architectury": "*"
+  }
+}

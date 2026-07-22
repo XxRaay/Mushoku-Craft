@@ -1,0 +1,22 @@
+architectury {
+    common(rootProject.enabled_platforms.split(","))
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/mushokucraft.accesswidener")
+}
+
+dependencies {
+    // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
+    // Do NOT use other fabric deps here!
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    
+    // Architectury API
+    modApi "dev.architectury:architectury:${rootProject.architectury_version}"
+
+    // GeckoLib
+    modImplementation "software.bernie.geckolib:geckolib-common-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
+
+    // Player Animator (stub for compile)
+    modCompileOnly files("../NeoForge_1.21.1/libs/player-animation-lib-forge-2.0.4+1.21.1.jar")
+}
