@@ -1,0 +1,65 @@
+package com.mushokucraft.neoforge;
+
+import com.mushokucraft.client.render.MagicBookItemRenderer;
+import com.mushokucraft.init.ModItems;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+
+@EventBusSubscriber(modid = "mushokucraft", bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+public class NeoForgeClientEvents {
+
+    @SubscribeEvent
+    public static void registerClientExtensions(RegisterClientExtensionsEvent event) {
+        event.registerItem(new IClientItemExtensions() {
+            private MagicBookItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (this.renderer == null) {
+                    this.renderer = new MagicBookItemRenderer("waterbook", "waterbook", "waterbookl");
+                }
+                return this.renderer;
+            }
+        }, ModItems.WATER_MAGIC_BOOK.get());
+
+        event.registerItem(new IClientItemExtensions() {
+            private MagicBookItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (this.renderer == null) {
+                    this.renderer = new MagicBookItemRenderer("pirobook", "pirobook", "pirobookl");
+                }
+                return this.renderer;
+            }
+        }, ModItems.FIRE_MAGIC_BOOK.get());
+
+        event.registerItem(new IClientItemExtensions() {
+            private MagicBookItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (this.renderer == null) {
+                    this.renderer = new MagicBookItemRenderer("geobook", "geobook", "geobookl");
+                }
+                return this.renderer;
+            }
+        }, ModItems.EARTH_MAGIC_BOOK.get());
+
+        event.registerItem(new IClientItemExtensions() {
+            private MagicBookItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (this.renderer == null) {
+                    this.renderer = new MagicBookItemRenderer("airbook", "windbook", "windbookl");
+                }
+                return this.renderer;
+            }
+        }, ModItems.WIND_MAGIC_BOOK.get());
+    }
+}

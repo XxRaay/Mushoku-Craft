@@ -1,16 +1,26 @@
 # Руководство по масштабированию MushokuCraft (SCALING.md)
 
-Это руководство описывает архитектуру мода после рефакторинга и объясняет, как добавлять новый контент (заклинания, стили меча, конфиги и элементы UI) без нарушения принципов чистого кода.
+Это руководство описывает архитектуру мода после переезда на **Architectury API** и объясняет, как добавлять новый контент (заклинания, стили меча, конфиги и элементы UI) так, чтобы он работал и на NeoForge, и на Fabric одновременно, без нарушения принципов чистого кода.
 
 ---
 
-## 1. Конфигурация и Баланс (`MushokuConfig.java`)
+## 1. Архитектура Multi-Loader (Architectury)
+
+Мод разделен на три модуля:
+- **`Common`**: Здесь находится 99% всего кода. Блоки, предметы, магия, боевка, рендер, эвенты — всё пишется здесь.
+- **`NeoForge_1.21.1`** и **`Fabric_1.21.1`**: Это просто легковесные "загрузчики", которые вызывают `MushokuCraftCommon.init()` и содержат мелкий платформозависимый код (например, регистрацию `LootModifiers` в Fabric или чтение JSON-атрибутов в NeoForge).
+
+**Главное правило:** Никогда не используйте классы, специфичные для `net.neoforged.*` или `net.fabricmc.*` внутри модуля `Common`. Используйте абстракции `dev.architectury.*`!
+
+---
+
+## 2. Конфигурация и Баланс (`MushokuConfig.java`)
 
 Вся балансировка (урон, мана, кулдауны, шансы) вынесена в `MushokuConfig.java`. **Никакого хардкода чисел в логике!**
 
 **Как добавить новый параметр:**
 1. Откройте `MushokuConfig.java`.
-2. Найдите или создайте подходящую категорию (например, `builder.push("magic")`).
+2. Найдите или создайте подходящую категорию.
 3. Добавьте `ForgeConfigSpec.ConfigValue`:
    ```java
    public static ForgeConfigSpec.DoubleValue NEW_SPELL_DAMAGE;
@@ -18,13 +28,12 @@
    NEW_SPELL_DAMAGE = builder.comment("Damage of the new spell")
        .defineInRange("newSpellDamage", 10.0, 0.0, 100.0);
    ```
-4. В коде используйте `MushokuConfig.NEW_SPELL_DAMAGE.get().floatValue()`.
 
 ---
 
-## 2. Добавление новых Заклинаний
+## 3. Добавление новых Заклинаний
 
-Мы используем **Паттерн Стратегия (Strategy Pattern)** для заклинаний. Больше не нужно писать `if (spellName.equals(...))` в `CastSpellPacket` или `ServerCastManager`.
+Мы используем **Паттерн Стратегия (Strategy Pattern)** для заклинаний.
 
 **Как добавить заклинание:**
 1. Создайте класс реализации `SpellAction` в пакете `com.mushokucraft.magic.action`:
@@ -38,7 +47,7 @@
    ```
 2. Зарегистрируйте заклинание в `ModSpells.java`:
    ```java
-   public static final Spell NEW_SPELL = new Spell.Builder(ResourceLocation.fromNamespaceAndPath(MushokuCraft.MOD_ID, "new_spell"))
+   public static final Spell NEW_SPELL = new Spell.Builder(ResourceLocation.fromNamespaceAndPath(MushokuCraftCommon.MOD_ID, "new_spell"))
        .school(MagicSchool.WATER)
        .baseManaCost(MushokuConfig.NEW_SPELL_MANA.get().floatValue())
        .baseCastTimeTicks(60) // 3 секунды
@@ -46,73 +55,79 @@
        .action(new NewSpellAction()) // Ваша логика
        .build();
    ```
-3. Для **заряжаемых (Charge)** заклинаний реализуйте логику в `ServerChargeManager.java` (аналогично `handleLongswordLight`), но в будущем рекомендуется вынести `ChargeAction` в отдельный интерфейс по аналогии со `SpellAction`.
 
 ---
 
-## 3. Добавление новых Стилей Меча
+## 4. Добавление новых Стилей Меча и Эвентов
 
-Боевая система разбита на независимые хэндлеры.
+В Architectury мы больше не используем аннотации `@SubscribeEvent`. Вместо этого мы используем лямбды и регистрацию через `dev.architectury.event.events.*`.
 
-**Как добавить стиль:**
-1. Добавьте его в `SwordStyle.java` (enum):
+**Как добавить стиль или любой другой обработчик эвентов:**
+1. Создайте класс хэндлера (например, `NewStyleHandler.java`) в пакете `com.mushokucraft.combat`.
+2. Напишите метод `register()` и подпишитесь на нужный Architectury Event:
    ```java
-   NEW_STYLE("new_style", ChatFormatting.LIGHT_PURPLE)
-   ```
-2. Создайте специализированный хэндлер `NewStyleHandler.java` в пакете `com.mushokucraft.combat`.
-3. Подпишите его на события (EventBusSubscriber).
-   ```java
-   @EventBusSubscriber(modid = MushokuCraft.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
    public class NewStyleHandler {
-       @SubscribeEvent
-       public static void onAttack(LivingDamageEvent.Pre event) {
-           // Проверьте активный стиль и примените логику
+       public static void register() {
+           // Например, хук на урон перед атакой
+           EntityEvent.LIVING_HURT.register((entity, source, amount) -> {
+               if (source.getEntity() instanceof Player player) {
+                   // Ваша логика применения стиля меча
+               }
+               return EventResult.pass();
+           });
        }
    }
    ```
-4. Если стиль дает пассивные бонусы к статам, добавьте их в `MasteryCalculator.java` или обновляйте атрибуты в `SwordCombatHandler.onPlayerTick`.
+3. Вызовите `NewStyleHandler.register()` внутри `MushokuCraftCommon.init()`.
 
 ---
 
-## 4. Сетевые пакеты (Network)
+## 5. Сетевые пакеты (Network)
 
-Пакеты должны быть **тонкими**. Они только переносят данные и делегируют выполнение менеджерам.
+Сетевой код переведен на `NetworkManager` из Architectury.
 
 **Правила для пакетов:**
-1. **Никакой логики в `handle()`**. Пакет должен вызывать метод вроде `Manager.doSomething(player, data)`.
-2. **Нет клиентских импортов на сервере**. Если пакет летит от Сервера к Клиенту (PlayToClient), его обработчик должен вызывать метод из `com.mushokucraft.client.network.ClientPayloadHandler`. 
-   - *Почему?* Иначе выделенный сервер (Dedicated Server) упадет с `NoClassDefFoundError` при попытке загрузить класс пакета.
+1. Регистрируйте пакеты в `ModNetworking.java` в `Common`:
+   ```java
+   NetworkManager.registerReceiver(NetworkManager.Side.C2S, PACKET_ID, (buf, context) -> {
+       // Чтение данных
+       context.queue(() -> {
+           // Исполнение на главном потоке сервера
+       });
+   });
+   ```
+2. **Никакой тяжелой логики в пакетах**. Пакет должен вызывать метод из менеджера, например `ServerCastManager.startCast(...)`.
 
 ---
 
-## 5. UI и Клиентская часть
+## 6. Регистрация Предметов, Блоков, Энтити (Registries)
+
+Вместо `DeferredRegister` от NeoForge, мы используем `DeferredRegister` из Architectury API (`dev.architectury.registry.registries.DeferredRegister`).
+Они выглядят и работают точно так же, но создаются через `DeferredRegister.create(MushokuCraftCommon.MOD_ID, Registries.ITEM)`.
+Все регистрации (items, blocks, entities, effects) вызываются в `MushokuCraftCommon.init()`.
+
+---
+
+## 7. UI, Инпуты и Клиентская часть
 
 Все, что связано с рендером и инпутами, изолировано в пакете `com.mushokucraft.client`.
+Регистрация клиентских эвентов и биндов происходит через `ModClientEvents.register()` и `ModClientSetup.register()`, которые вызываются только на стороне клиента в `NeoForge_1.21.1` и `Fabric_1.21.1` модулях (или через `EnvExecutor.runInEnv(Env.CLIENT, ...)`).
 
-- **Инпуты:** Ранее огромный `ClientInputHandler` разбит на `MenuInputHandler` (круговое меню), `QteInputHandler` (мини-игра) и `CombatInputHandler` (удары/касты). Добавляйте новые бинды в соответствующие классы.
-- **HUD:** Рендереры разбиты на отдельные классы (`ManaHudManager`, `QTEOverlay`, `MasteryOverlay`). Константы для отрисовки (цвета, размеры) вынесены в `HudConstants.java`.
+- **Инпуты:** Ранее огромный класс инпутов разбит на `MenuInputHandler` (круговое меню), `QteInputHandler` (мини-игра) и `CombatInputHandler` (удары/касты). Инпуты биндятся через Architectury `ClientTickEvent.CLIENT_POST`.
+- **HUD:** Рендереры разбиты на отдельные классы (`ManaHudManager`, `QTEOverlay`, `MasteryOverlay`).
 
 ---
 
-## 6. Прогрессия и Формулы
+## 8. Прогрессия и Формулы
 
 Все формулы вычисления статов (размер маны, реген, шансы успеха, урон Тоуки) находятся в `MasteryCalculator.java`. 
 
 Если вам нужно изменить то, как мастерство влияет на размер окна QTE или урон, меняйте это **только** в `MasteryCalculator`, а не раскидывайте умножения (`* 0.2f`) по всему коду.
 
-## 7. Система разделки туш (Carcass System)
-
-Для добавления разделываемых туш монстров, используйте базовый класс `AbstractCarcassEntity`. Это позволяет избежать дублирования логики взаимодействия с Охотничьим ножом.
-
-**Как добавить новую тушу:**
-1. Создайте класс (например, `DeadGiantFrogEntity`), наследующий `AbstractCarcassEntity`.
-2. Зарегистрируйте `EntityType` в `ModEntities`.
-3. Переопределите метод `getCarcassLootTable()` и верните уникальный `ResourceKey<LootTable>` (например, `entities/dead_giant_frog_carcass`).
-4. Создайте соответствующий `.json` файл лут-таблицы в ресурсах.
-Все эффекты (партиклы, кулдауны, трата прочности ножа) обрабатываются автоматически в `AbstractCarcassEntity`. Количество использований для разделки настраивается глобально в `MushokuConfig.CARCASS_MAX_USES`.
+---
 
 ## Чеклист добавления новой фичи:
+- [ ] Логика кросс-платформенна? (Нет ли импортов `net.neoforged` или `net.fabricmc` в `Common` модуле?)
 - [ ] Логика не захардкожена? (Числа вынесены в Config/Constants?)
-- [ ] Код не дублируется? (Используется базовый класс `AbstractMagicProjectileEntity`?)
-- [ ] В пакетах нет логики? (Они тонкие?)
-- [ ] Серверный код не импортирует классы рендера/Minecraft.getInstance()?
+- [ ] Эвенты зарегистрированы через `dev.architectury.event.*` в методе `register()`?
+- [ ] Серверный код не вызывает классы рендера/клиента?
