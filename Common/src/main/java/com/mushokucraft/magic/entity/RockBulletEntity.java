@@ -56,7 +56,7 @@ public class RockBulletEntity extends AbstractMagicProjectileEntity {
                     this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE).getHolderOrThrow(com.mushokucraft.init.ModDamageTypes.MAGIC),
                     this, this.getOwner()
                 );
-                target.hurt(source, 8.0F * scale);
+                target.hurt(source, 4.0F * scale);
             }
             this.discard();
         }

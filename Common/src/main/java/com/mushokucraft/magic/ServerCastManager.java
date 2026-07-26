@@ -25,6 +25,7 @@ import dev.architectury.event.events.common.PlayerEvent;
 
 public class ServerCastManager {
     private static final Map<UUID, ActiveCast> activeCasts = new HashMap<UUID, ActiveCast>();
+    public static final Map<UUID, net.minecraft.world.phys.Vec3> lockedTargetPositions = new HashMap<>();
 
     public static void register() {
         TickEvent.SERVER_POST.register((server) -> {
@@ -46,9 +47,10 @@ public class ServerCastManager {
                     String randomKey = String.valueOf(letters.charAt((int)(Math.random() * (double)letters.length())));
                     PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
                     float schoolMastery = mastery.getSchoolMastery(cast.spell.getSchool());
-                    float speedModifier = MasteryCalculator.calculateQteSpeedModifier(schoolMastery);
-                    float sizeModifier = MasteryCalculator.calculateQteSizeModifier(schoolMastery);
-                    NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new QteTriggerPacket(randomKey, speedModifier, sizeModifier));
+                    float speedModifier = MasteryCalculator.calculateQteSpeedModifier(schoolMastery, cast.spell.getRank().getTier());
+                    float targetSizeModifier = MasteryCalculator.calculateQteTargetSize(cast.spell.getRank().getTier());
+                    float perfectMultiplier = 0.4f * MasteryCalculator.calculateQteSizeModifier(schoolMastery);
+                    NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new QteTriggerPacket(randomKey, speedModifier, targetSizeModifier, perfectMultiplier));
                     continue;
                 }
                 if (cast.forceFizzle || cast.fizzleTick > 0 && cast.totalTicks - cast.remainingTicks >= cast.fizzleTick) {
@@ -82,6 +84,17 @@ public class ServerCastManager {
 
     public static void startCast(ServerPlayer player, Spell spell, int castTime, int fizzleTick) {
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, castTime + 10, 1, false, false, true));
+        
+        if (spell.getId().getPath().equals("icicle_break")) {
+            net.minecraft.world.phys.Vec3 eyePos = player.getEyePosition();
+            net.minecraft.world.phys.Vec3 look = player.getLookAngle();
+            net.minecraft.world.phys.Vec3 endPos = eyePos.add(look.scale(7.0));
+            net.minecraft.world.phys.HitResult result = player.level().clip(new net.minecraft.world.level.ClipContext(eyePos, endPos, net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+            net.minecraft.world.phys.Vec3 hitPos = result.getLocation();
+            net.minecraft.world.phys.HitResult groundResult = player.level().clip(new net.minecraft.world.level.ClipContext(hitPos, hitPos.add(0, -64, 0), net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+            lockedTargetPositions.put(player.getUUID(), groundResult.getLocation());
+        }
+
         PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
         float spellMastery = mastery.getSpellMastery(spell.getId());
         ArrayList<Integer> qteTicks = new ArrayList<Integer>();
@@ -92,6 +105,7 @@ public class ServerCastManager {
         activeCasts.put(player.getUUID(), cast);
         float schoolMastery = mastery.getSchoolMastery(spell.getSchool());
         double successChance = MasteryCalculator.calculateSpellSuccessChance(spellMastery, schoolMastery);
+        successChance = Math.max(0.0, successChance - MasteryCalculator.calculateTierPenalty(spell, mastery));
         ServerCastManager.scheduleNextFizzle(cast, successChance);
     }
 
@@ -111,17 +125,30 @@ public class ServerCastManager {
                 }
                 PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
                 float spellMastery = mastery.getSpellMastery(cast.spell.getId());
-                double successChance = 1.0 - (double)cast.spell.getFizzleChance(spellMastery);
+                double successChance = 1.0 - (double)cast.spell.getFizzleChance(spellMastery, mastery);
                 ServerCastManager.scheduleNextFizzle(cast, successChance);
             }
         }
     }
 
     private static void scheduleNextFizzle(ActiveCast cast, double successChance) {
-        boolean success;
-        boolean bl = success = Math.random() < successChance;
-        if (!success && cast.remainingTicks > 20) {
-            int ticksFromNow = 10 + (int)(Math.random() * (double)(cast.remainingTicks - 20));
+        boolean success = Math.random() < successChance;
+        if (!success && cast.remainingTicks > 5) {
+            int ticksFromNow;
+            if (successChance <= 0.0) {
+                // 100% fizzle -> QTE "on every letter" (very fast, 2-5 ticks)
+                ticksFromNow = 2 + (int)(Math.random() * 4.0);
+            } else if (successChance < 0.21) {
+                // > 79% fizzle -> QTE "on every word" (fast, 10-20 ticks)
+                ticksFromNow = 10 + (int)(Math.random() * 11.0);
+            } else {
+                // Normal
+                int maxDelay = Math.max(1, cast.remainingTicks - 20);
+                ticksFromNow = 15 + (int)(Math.random() * (double)Math.min(40, maxDelay));
+            }
+            
+            ticksFromNow = Math.min(ticksFromNow, cast.remainingTicks - 1);
+            
             cast.fizzleTick = cast.totalTicks - cast.remainingTicks + ticksFromNow;
             cast.qteTriggerTicks.add(cast.remainingTicks - ticksFromNow);
             Collections.sort(cast.qteTriggerTicks);

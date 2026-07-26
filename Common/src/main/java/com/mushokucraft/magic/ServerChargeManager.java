@@ -44,6 +44,7 @@ import dev.architectury.event.events.common.PlayerEvent;
 public class ServerChargeManager {
     private static final Map<UUID, ChargeData> chargingPlayers = new HashMap<UUID, ChargeData>();
     private static final Map<UUID, SilenceData> activeSilences = new HashMap<UUID, SilenceData>();
+    public static final java.util.Set<UUID> buttonHeldPlayers = new java.util.HashSet<>();
 
     public static void register() {
         TickEvent.PLAYER_POST.register((player) -> {
@@ -86,8 +87,11 @@ public class ServerChargeManager {
                         }
                     }
                 }
-                if ((chargeData = chargingPlayers.get(player2.getUUID())) != null && chargeData.ticks < (Integer)MushokuConfig.CHARGE_MAX_TICKS.get()) {
-                    PlayerMasteryData data = (PlayerMasteryData)PlayerMasteryProvider.get(player2);
+                if ((chargeData = chargingPlayers.get(player2.getUUID())) != null) {
+                    Spell spell = ModSpells.SPELLS.get(chargeData.spellId);
+                    boolean isChanneled = spell != null && (spell.isChanneled() || chargeData.spellId.getPath().equals("icicle_break"));
+                    if (chargeData.ticks < (Integer)MushokuConfig.CHARGE_MAX_TICKS.get() || isChanneled) {
+                        PlayerMasteryData data = (PlayerMasteryData)PlayerMasteryProvider.get(player2);
                     if (data.consumeMana(chargeData.maxManaDrainPerTick)) {
                         ++chargeData.ticks;
                         float progress = (float)chargeData.ticks / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue();
@@ -104,6 +108,7 @@ public class ServerChargeManager {
                         ServerChargeManager.releaseCharge(player2);
                         ModGameEvents.syncMana(player2, data);
                     }
+                    }
                 }
             }
         });
@@ -111,6 +116,7 @@ public class ServerChargeManager {
         PlayerEvent.PLAYER_QUIT.register((player) -> {
             chargingPlayers.remove(player.getUUID());
             activeSilences.remove(player.getUUID());
+            buttonHeldPlayers.remove(player.getUUID());
         });
     }
 
@@ -119,6 +125,7 @@ public class ServerChargeManager {
     }
 
     public static void startCharge(ServerPlayer player, ResourceLocation spellId) {
+        buttonHeldPlayers.add(player.getUUID());
         Spell spell = ModSpells.SPELLS.get(spellId);
         if (spell == null) {
             return;
@@ -128,10 +135,11 @@ public class ServerChargeManager {
         if (spellMastery < 1.0f) {
             float manaCost = spell.getEffectiveManaCost(data);
             if (data.getMana() < manaCost) {
+                player.displayClientMessage(Component.translatable("message.mushokucraft.not_enough_mana"), true);
                 return;
             }
             float castTimeTicks = spell.getCastTime(spellMastery);
-            float fizzleChance = spell.getFizzleChance(spellMastery);
+            float fizzleChance = spell.getFizzleChance(spellMastery, data);
             int iCastTime = (int)castTimeTicks;
             int fizzleTick = -1;
             if (iCastTime > 0) {
@@ -154,6 +162,7 @@ public class ServerChargeManager {
             return;
         }
         if (!data.consumeMana(spell.getEffectiveManaCost(data))) {
+            player.displayClientMessage(Component.translatable("message.mushokucraft.not_enough_mana"), true);
             return;
         }
         Projectile magicProjectile = spell.getProjectileFactory().create(player.level(), player);
@@ -257,9 +266,28 @@ public class ServerChargeManager {
     }
 
     public static void releaseCharge(ServerPlayer player) {
+        buttonHeldPlayers.remove(player.getUUID());
         ChargeData chargeData = chargingPlayers.remove(player.getUUID());
         if (chargeData != null) {
             ServerChargeManager.fireCharge(player, chargeData);
+        }
+    }
+
+    public static void startChanneledSpell(ServerPlayer player, ResourceLocation spellId) {
+        Spell spell = ModSpells.SPELLS.get(spellId);
+        if (spell == null || chargingPlayers.containsKey(player.getUUID())) return;
+        PlayerMasteryData data = (PlayerMasteryData)PlayerMasteryProvider.get(player);
+        Projectile magicProjectile = spell.getProjectileFactory().create(player.level(), player);
+        if (magicProjectile instanceof IMagicProjectile) {
+            IMagicProjectile chargeable = (IMagicProjectile)magicProjectile;
+            chargeable.setCharging(true);
+            chargeable.setChargeScale(0.1f);
+        }
+        if (magicProjectile != null) {
+            player.level().addFreshEntity((Entity)magicProjectile);
+            float maxManaDrainPerTick = ((Double)MushokuConfig.CHARGE_TOTAL_MANA_DRAIN.get()).floatValue() / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue();
+            chargingPlayers.put(player.getUUID(), new ChargeData(spellId, magicProjectile, maxManaDrainPerTick));
+            ModGameEvents.syncMana(player, data);
         }
     }
 

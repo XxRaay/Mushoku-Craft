@@ -52,7 +52,7 @@ public class ClientPayloadHandler {
     }
 
     public static void handleQteTrigger(QteTriggerPacket packet) {
-        ClientCastState.startQte(packet.keyLetter(), packet.speedModifier(), packet.targetSizeModifier());
+        ClientCastState.startQte(packet.keyLetter(), packet.speedModifier(), packet.targetSizeModifier(), packet.perfectMultiplier());
     }
 
     public static void handleLearnSpellResult(LearnSpellResultPacket packet) {

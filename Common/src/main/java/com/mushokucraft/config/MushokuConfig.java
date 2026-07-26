@@ -13,12 +13,33 @@ public class MushokuConfig {
     public static final ConfigValue<ManaDisplayMode> MANA_DISPLAY_MODE = new ConfigValue<>(ManaDisplayMode.HYBRID);
     public static final ConfigValue<Double> MANA_BAR_OPACITY = new ConfigValue<>(0.85);
     public static final ConfigValue<Boolean> SHOW_MANA_NUMBERS = new ConfigValue<>(true);
+
+    // Water Slice Configs
+    public static final ConfigValue<Double> WATER_SLICE_MANA_COST = new ConfigValue<>(30.0);
+    public static final ConfigValue<Integer> WATER_SLICE_CAST_TIME_TICKS = new ConfigValue<>(100);
+    public static final ConfigValue<Double> WATER_SLICE_FIZZLE_CHANCE = new ConfigValue<>(0.45);
+    public static final ConfigValue<Double> WATER_SLICE_BASE_DAMAGE = new ConfigValue<>(6.0);
+    public static final ConfigValue<Double> WATER_SLICE_CHARGE_WIDTH_MULT = new ConfigValue<>(1.5);
     
+    // Icicle Break Configs
+    public static final ConfigValue<Double> ICICLE_BREAK_MANA_COST = new ConfigValue<>(50.0);
+    public static final ConfigValue<Integer> ICICLE_BREAK_CAST_TIME_TICKS = new ConfigValue<>(100);
+    public static final ConfigValue<Double> ICICLE_BREAK_FIZZLE_CHANCE = new ConfigValue<>(0.5);
+    public static final ConfigValue<Double> ICICLE_BREAK_ICICLE_DAMAGE = new ConfigValue<>(8.0);
+    
+    // Cumulonimbus Configs
+    public static final ConfigValue<Double> CUMULONIMBUS_MANA_COST = new ConfigValue<>(100.0);
+    public static final ConfigValue<Integer> CUMULONIMBUS_CAST_TIME_TICKS = new ConfigValue<>(200);
+    public static final ConfigValue<Double> CUMULONIMBUS_FIZZLE_CHANCE = new ConfigValue<>(0.6);
+    public static final ConfigValue<Double> CUMULONIMBUS_RADIUS = new ConfigValue<>(50.0);
+    public static final ConfigValue<Double> CUMULONIMBUS_LIGHTNING_DAMAGE = new ConfigValue<>(15.0);
+    public static final ConfigValue<Integer> CUMULONIMBUS_STRIKE_INTERVAL_TICKS = new ConfigValue<>(40);
+
     public static final ConfigValue<Double> DEFAULT_MANA = new ConfigValue<>(100.0);
     public static final ConfigValue<Double> DEFAULT_MAX_MANA = new ConfigValue<>(100.0);
     public static final ConfigValue<Double> DEFAULT_MANA_REGEN_RATE = new ConfigValue<>(0.05);
     public static final ConfigValue<Double> MANA_COST_REDUCTION_PER_MASTERY = new ConfigValue<>(0.3);
-    public static final ConfigValue<Double> SPELL_MASTERY_PER_CAST = new ConfigValue<>(0.05);
+    public static final ConfigValue<Double> SPELL_MASTERY_PER_CAST = new ConfigValue<>(0.025);
     public static final ConfigValue<Double> SCHOOL_MASTERY_PER_CAST = new ConfigValue<>(0.01);
     public static final ConfigValue<Double> LEARNING_SUCCESS_BASE_CHANCE = new ConfigValue<>(0.25);
     public static final ConfigValue<Double> LEARNING_MASTERY_GAIN = new ConfigValue<>(0.1);

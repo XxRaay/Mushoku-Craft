@@ -1,0 +1,25 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"cumulonimbus_charge": {
+			"loop": true,
+			"animation_length": 2.0,
+			"bones": {
+				"leftArm": {
+					"rotation": {
+						"0.0": [-170, 0, 10],
+						"1.0": [-180, 0, 15],
+						"2.0": [-170, 0, 10]
+					}
+				},
+				"rightArm": {
+					"rotation": {
+						"0.0": [-170, 0, -10],
+						"1.0": [-180, 0, -15],
+						"2.0": [-170, 0, -10]
+					}
+				}
+			}
+		}
+	}
+}

@@ -24,6 +24,7 @@ public class ClientCastState {
     public static String currentQteKey = "";
     public static float qteSpeedModifier = 1.0f;
     public static float qteTargetSizeModifier = 1.0f;
+    public static float qtePerfectMultiplier = 0.4f;
     public static float qteShrinkingCircleScale = 3.0f;
     public static boolean isLearningCast = false;
 
@@ -39,11 +40,12 @@ public class ClientCastState {
         isLearningCast = isLearning;
     }
 
-    public static void startQte(String keyLetter, float speedModifier, float targetSizeModifier) {
+    public static void startQte(String keyLetter, float speedModifier, float targetSizeModifier, float perfectMultiplier) {
         isQteActive = true;
         currentQteKey = keyLetter;
         qteSpeedModifier = speedModifier;
         qteTargetSizeModifier = targetSizeModifier;
+        qtePerfectMultiplier = perfectMultiplier;
         qteShrinkingCircleScale = 3.0f;
     }
 

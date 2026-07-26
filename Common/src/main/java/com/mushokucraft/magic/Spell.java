@@ -25,6 +25,7 @@ public class Spell {
     private final SpellAction spellAction;
     private final float baseSpeed;
     private final float baseInaccuracy;
+    private final boolean channeled;
 
     private Spell(Builder builder) {
         this.id = builder.id;
@@ -38,6 +39,7 @@ public class Spell {
         this.spellAction = builder.spellAction;
         this.baseSpeed = builder.baseSpeed;
         this.baseInaccuracy = builder.baseInaccuracy;
+        this.channeled = builder.channeled;
     }
 
     public ResourceLocation getId() { return id; }
@@ -51,15 +53,20 @@ public class Spell {
     public SpellAction getSpellAction() { return spellAction; }
     public float getBaseSpeed() { return baseSpeed; }
     public float getBaseInaccuracy() { return baseInaccuracy; }
+    public boolean isChanneled() { return channeled; }
 
     public float getCastTime(float mastery) {
         if (mastery >= 1.0f) return 0f; // Silent Casting
         return baseCastTimeTicks * (1.0f - mastery);
     }
 
-    public float getFizzleChance(float mastery) {
+    public float getFizzleChance(float mastery, com.mushokucraft.data.PlayerMasteryData data) {
         if (mastery >= 1.0f) return 0f;
-        return baseFizzleChance * (1.0f - mastery);
+        float chance = baseFizzleChance * (1.0f - mastery);
+        if (data != null) {
+            chance += com.mushokucraft.data.MasteryCalculator.calculateTierPenalty(this, data);
+        }
+        return Math.min(1.0f, chance);
     }
 
     public float getEffectiveManaCost(com.mushokucraft.data.PlayerMasteryData data) {
@@ -83,6 +90,7 @@ public class Spell {
         private SpellAction spellAction = null;
         private float baseSpeed = 0f;
         private float baseInaccuracy = 0f;
+        private boolean channeled = false;
 
         public Builder(ResourceLocation id, MagicSchool school, SpellRank rank) {
             this.id = id;
@@ -105,6 +113,11 @@ public class Spell {
         
         public Builder action(SpellAction action) {
             this.spellAction = action;
+            return this;
+        }
+
+        public Builder channeled(boolean channeled) {
+            this.channeled = channeled;
             return this;
         }
 

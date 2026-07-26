@@ -32,9 +32,14 @@ public class CombatInputHandler {
     private static KeyframeAnimationPlayer animationPlayer = null;
     private static SwordStyle lastStance = null;
     private static KeyframeAnimationPlayer stanceAnimationPlayer = null;
+    private static com.mushokucraft.magic.entity.IcicleBreakTargetEntity previewTargetEntity = null;
 
     public static boolean isCharging() {
         return isCharging;
+    }
+
+    public static com.mushokucraft.magic.entity.IcicleBreakTargetEntity getPreviewEntity() {
+        return previewTargetEntity;
     }
 
     public static void register() {
@@ -57,7 +62,11 @@ public class CombatInputHandler {
                 if (!isCharging) {
                     isCharging = true;
                     NetworkManager.sendToServer(new StartChargePacket(ClientSpellState.selectedSpell));
-                    CombatInputHandler.startPlayerAnimation("waterball_charge");
+                    if (spellName.equals("cumulonimbus")) {
+                        CombatInputHandler.startPlayerAnimation("cumulonimbus_charge");
+                    } else {
+                        CombatInputHandler.startPlayerAnimation("waterball_charge");
+                    }
                 }
                 mc.player.swing(InteractionHand.MAIN_HAND);
                 return EventResult.interruptFalse();
@@ -125,6 +134,52 @@ public class CombatInputHandler {
                     NetworkManager.sendToServer(new ReleaseChargePacket());
                     CombatInputHandler.stopPlayerAnimation();
                     lastStance = null;
+                }
+            }
+            if (ClientSpellState.selectedSpell != null && ClientSpellState.selectedSpell.getPath().equals("icicle_break")) {
+                if (mc.level != null && mc.player != null) {
+                    com.mushokucraft.data.PlayerMasteryData mastery = (com.mushokucraft.data.PlayerMasteryData) com.mushokucraft.data.PlayerMasteryProvider.get(mc.player);
+                    float spellMastery = mastery != null ? mastery.getSpellMastery(ClientSpellState.selectedSpell) : 0f;
+                    
+                    if (isCharging && spellMastery >= 1.0f) {
+                        // Silent Cast is charging, server handles the render. Discard client preview.
+                        if (previewTargetEntity != null) {
+                            previewTargetEntity.discard();
+                            previewTargetEntity = null;
+                        }
+                    } else {
+                        // Not charging, OR Regular Cast is charging (server hasn't spawned yet)
+                        net.minecraft.world.phys.Vec3 eyePos = mc.player.getEyePosition();
+                        net.minecraft.world.phys.Vec3 look = mc.player.getLookAngle();
+                        net.minecraft.world.phys.Vec3 endPos = eyePos.add(look.scale(7.0));
+                        net.minecraft.world.phys.HitResult result = mc.level.clip(new net.minecraft.world.level.ClipContext(eyePos, endPos, net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, mc.player));
+                        net.minecraft.world.phys.Vec3 hitPos = result.getLocation();
+                        
+                        net.minecraft.world.phys.HitResult groundResult = mc.level.clip(new net.minecraft.world.level.ClipContext(hitPos, hitPos.add(0, -64, 0), net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, mc.player));
+                        net.minecraft.world.phys.Vec3 groundPos = groundResult.getLocation();
+
+                        if (previewTargetEntity == null) {
+                            previewTargetEntity = new com.mushokucraft.magic.entity.IcicleBreakTargetEntity(mc.level, mc.player);
+                            previewTargetEntity.setPos(groundPos.x, groundPos.y + 0.05, groundPos.z);
+                            previewTargetEntity.setSnappedToGround(true);
+                            mc.level.addEntity(previewTargetEntity);
+                        } else {
+                            // Lerp position
+                            double lerpFactor = 0.3; // Adjust for smoothness vs responsiveness
+                            double newX = previewTargetEntity.getX() + (groundPos.x - previewTargetEntity.getX()) * lerpFactor;
+                            double newZ = previewTargetEntity.getZ() + (groundPos.z - previewTargetEntity.getZ()) * lerpFactor;
+                            
+                            previewTargetEntity.xOld = previewTargetEntity.getX();
+                            previewTargetEntity.yOld = previewTargetEntity.getY();
+                            previewTargetEntity.zOld = previewTargetEntity.getZ();
+                            previewTargetEntity.setPos(newX, groundPos.y + 0.05, newZ);
+                        }
+                    }
+                }
+            } else {
+                if (previewTargetEntity != null) {
+                    previewTargetEntity.discard();
+                    previewTargetEntity = null;
                 }
             }
         });

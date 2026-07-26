@@ -11,6 +11,13 @@ import net.minecraft.world.phys.Vec3;
 public class ProjectileSpellAction implements SpellAction {
     @Override
     public void execute(Level level, ServerPlayer player, Spell spell) {
+        if (spell.isChanneled()) {
+            if (ServerChargeManager.buttonHeldPlayers.contains(player.getUUID())) {
+                ServerChargeManager.startChanneledSpell(player, spell.getId());
+            }
+            return;
+        }
+
         if (spell.getProjectileFactory() != null) {
             Projectile projectile = spell.getProjectileFactory().create(level, player);
             Vec3 look = player.getLookAngle();

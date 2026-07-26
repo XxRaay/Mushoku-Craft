@@ -33,30 +33,26 @@
 
 ## 3. Добавление новых Заклинаний
 
-Мы используем **Паттерн Стратегия (Strategy Pattern)** для заклинаний.
+Мы используем паттерн **Builder** для заклинаний. Теперь заклинания могут иметь ранг (SpellRank), инкантацию, прожектайлы и свойство поддерживаемости (channeled).
 
 **Как добавить заклинание:**
-1. Создайте класс реализации `SpellAction` в пакете `com.mushokucraft.magic.action`:
+1. Зарегистрируйте заклинание в `ModSpells.java`:
    ```java
-   public class NewSpellAction implements SpellAction {
-       @Override
-       public void execute(Level level, ServerPlayer player, Spell spell) {
-           // Логика инстант-каста (спавн энтити, урон, хилка и т.д.)
-       }
-   }
+   public static final Spell NEW_SPELL = register(new Spell.Builder(
+           ResourceLocation.fromNamespaceAndPath("mushokucraft", "new_spell"), MagicSchool.WATER, SpellRank.ADVANCED)
+           .castTime(MushokuConfig.NEW_SPELL_CAST_TIME.get().floatValue())
+           .manaCost(MushokuConfig.NEW_SPELL_MANA.get().floatValue())
+           .fizzleChance(MushokuConfig.NEW_SPELL_FIZZLE.get().floatValue())
+           .incantation("spell.mushokucraft.new_spell.incantation")
+           .channeled(false) // Опционально: true для заклинаний, которые можно держать бесконечно
+           // Выберите один из способов эффекта:
+           .projectile(com.mushokucraft.magic.entity.NewSpellEntity::new, 2.0f, 0.5f) // Если это прожектайл
+           // .action(new NewSpellAction()) // Если это кастомное действие
+           .build());
    ```
-2. Зарегистрируйте заклинание в `ModSpells.java`:
-   ```java
-   public static final Spell NEW_SPELL = new Spell.Builder(ResourceLocation.fromNamespaceAndPath(MushokuCraftCommon.MOD_ID, "new_spell"))
-       .school(MagicSchool.WATER)
-       .baseManaCost(MushokuConfig.NEW_SPELL_MANA.get().floatValue())
-       .baseCastTimeTicks(60) // 3 секунды
-       .fizzleChance(0.2f)
-       .action(new NewSpellAction()) // Ваша логика
-       .build();
-   ```
-
----
+2. Если заклинание использует `SpellAction`, создайте его реализацию в пакете `com.mushokucraft.magic.action`.
+3. Добавьте локализацию инкантации и названия в языковые файлы (`en_us.json` и `ru_ru.json`).
+4. Добавьте заклинание в список заклинаний в круговом меню (например, `SpellWheelScreen`).
 
 ## 4. Добавление новых Стилей Меча и Эвентов
 

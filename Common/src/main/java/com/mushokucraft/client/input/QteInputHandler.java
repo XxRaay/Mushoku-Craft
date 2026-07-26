@@ -30,7 +30,7 @@ public class QteInputHandler {
                     float targetSize = ClientCastState.qteTargetSizeModifier;
                     int result = 0;
                     if (scale <= targetSize) {
-                        result = scale <= 0.4f * targetSize ? 2 : 1;
+                        result = scale <= ClientCastState.qtePerfectMultiplier * targetSize ? 2 : 1;
                     }
                     ClientCastState.endQte(result > 0);
                     NetworkManager.sendToServer(new QteResultPacket(result, ClientCastState.isLearningCast));

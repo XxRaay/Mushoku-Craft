@@ -1,4 +1,5 @@
 {
+  "gui.mushokucraft.magic_book.school_mastery": "Мастерство школы: %s",
   "itemGroup.mushokucraft": "Mushoku Craft",
   "itemGroup.mushokucraft.main_tab": "Mushoku Craft",
   "item.mushokucraft.water_magic_book": "Книга Магии Воды",
@@ -66,10 +67,28 @@
   
   "gui.mushokucraft.water_magic_book.title": "Книга Магии Воды",
   "gui.mushokucraft.water_magic_book.school": "Школа Магии Воды",
-  "gui.mushokucraft.water_magic_book.spell_name": "Водяной шар",
-  "gui.mushokucraft.water_magic_book.desc1": "Создает сферу воды и",
-  "gui.mushokucraft.water_magic_book.desc2": "запускает ее в цель.",
+  "gui.mushokucraft.water_magic_book.waterball.name": "Водяной шар",
+  "gui.mushokucraft.water_magic_book.waterball.desc1": "Создает сферу воды и",
+  "gui.mushokucraft.water_magic_book.waterball.desc2": "запускает ее в цель.",
   "gui.mushokucraft.water_magic_book.learn": "Изучить",
+
+  "gui.mushokucraft.water_magic_book.water_slice.name": "Водяное лезвие",
+  "gui.mushokucraft.water_magic_book.water_slice.desc1": "Тонкая струя воды",
+  "gui.mushokucraft.water_magic_book.water_slice.desc2": "под экстремальным давлением.",
+  "spell.mushokucraft.water_slice": "Водяное лезвие",
+  "spell.mushokucraft.water_slice.incantation": "О великая благодать воды, сожмись и стань острейшим клинком, что рассечет моих врагов! Водяное лезвие!",
+  
+  "gui.mushokucraft.water_magic_book.icicle_break.name": "Ледяной разрыв",
+  "gui.mushokucraft.water_magic_book.icicle_break.desc1": "Призывает тяжелые сосульки, которые",
+  "gui.mushokucraft.water_magic_book.icicle_break.desc2": "обрушиваются на врагов.",
+  "spell.mushokucraft.icicle_break": "Ледяной разрыв",
+  "spell.mushokucraft.icicle_break.incantation": "О великая благодать воды, обратись в острые клыки льда и пролейся дождем на моих врагов! Ледяной разрыв!",
+
+  "gui.mushokucraft.water_magic_book.cumulonimbus.name": "Кучево-дождевые облака",
+  "gui.mushokucraft.water_magic_book.cumulonimbus.desc1": "Призывает огромную грозу,",
+  "gui.mushokucraft.water_magic_book.cumulonimbus.desc2": "поражающую врагов молниями.",
+  "spell.mushokucraft.cumulonimbus": "Кучево-дождевые облака",
+  "spell.mushokucraft.cumulonimbus.incantation": "О, великий дух воды, сын императора молний,\nкоторый вознёсся к небесам!\nИсполни мои желания, излей вниз свои свирепые благословения,\nи яви свою силу этому ничтожному бытию!\nПусть твой божественный молот ударит о наковальню\nи покажет твоё величие, и да поглотит вода эту землю!\nО, дождь! Уничтожь и смой всё вокруг!\nГРОЗОВЫЕ ОБЛАКА!",
 
   "spell.mushokucraft.waterball.incantation": "О великая благодать воды, соберись там, где я укажу, и яви предо мной свой чистый лик! Водяной шар!",
 
@@ -78,9 +97,9 @@
   "spell.school.mushokucraft.fire": "Школа Огня",
   "gui.mushokucraft.fire_magic_book.title": "Книга Магии Огня",
   "gui.mushokucraft.fire_magic_book.school": "Школа Магии Огня",
-  "gui.mushokucraft.fire_magic_book.spell_name": "Огненный шар",
-  "gui.mushokucraft.fire_magic_book.desc1": "Создает огненную сферу,",
-  "gui.mushokucraft.fire_magic_book.desc2": "поджигающую цель.",
+  "gui.mushokucraft.fire_magic_book.fireball.name": "Огненный шар",
+  "gui.mushokucraft.fire_magic_book.fireball.desc1": "Создает огненную сферу,",
+  "gui.mushokucraft.fire_magic_book.fireball.desc2": "поджигающую цель.",
   "gui.mushokucraft.fire_magic_book.learn": "Изучить",
   "spell.mushokucraft.fireball.incantation": "Даруй великое пламя там, где желает того просящий. Фаербол!",
 
@@ -89,9 +108,9 @@
   "spell.school.mushokucraft.earth": "Школа Земли",
   "gui.mushokucraft.earth_magic_book.title": "Книга Магии Земли",
   "gui.mushokucraft.earth_magic_book.school": "Школа Магии Земли",
-  "gui.mushokucraft.earth_magic_book.spell_name": "Каменная пуля",
-  "gui.mushokucraft.earth_magic_book.desc1": "Выстреливает плотным куском",
-  "gui.mushokucraft.earth_magic_book.desc2": "породы на огромной скорости.",
+  "gui.mushokucraft.earth_magic_book.rockbullet.name": "Каменная пуля",
+  "gui.mushokucraft.earth_magic_book.rockbullet.desc1": "Выстреливает плотным куском",
+  "gui.mushokucraft.earth_magic_book.rockbullet.desc2": "породы на огромной скорости.",
   "gui.mushokucraft.earth_magic_book.learn": "Изучить",
   "spell.mushokucraft.rockbullet.incantation": "Даруй твёрдую опору там, где желает того просящий. Каменная пуля!",
 
@@ -100,9 +119,9 @@
   "spell.school.mushokucraft.wind": "Школа Ветра",
   "gui.mushokucraft.wind_magic_book.title": "Книга Магии Ветра",
   "gui.mushokucraft.wind_magic_book.school": "Школа Магии Ветра",
-  "gui.mushokucraft.wind_magic_book.spell_name": "Воздушный удар",
-  "gui.mushokucraft.wind_magic_book.desc1": "Выпускает плотный поток воздуха,",
-  "gui.mushokucraft.wind_magic_book.desc2": "отбрасывающий врагов.",
+  "gui.mushokucraft.wind_magic_book.airstrike.name": "Воздушный удар",
+  "gui.mushokucraft.wind_magic_book.airstrike.desc1": "Выпускает плотный поток воздуха,",
+  "gui.mushokucraft.wind_magic_book.airstrike.desc2": "отбрасывающий врагов.",
   "gui.mushokucraft.wind_magic_book.learn": "Изучить",
   "spell.mushokucraft.airstrike.incantation": "О невидимый дух ветра, яви свою силу и отбрось моего врага! Воздушный удар!",
   

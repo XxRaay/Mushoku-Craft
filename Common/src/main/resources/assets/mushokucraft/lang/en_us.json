@@ -1,4 +1,5 @@
 {
+  "gui.mushokucraft.magic_book.school_mastery": "School Mastery: %s",
   "itemGroup.mushokucraft": "Mushoku Craft",
   "itemGroup.mushokucraft.main_tab": "Mushoku Craft",
   "item.mushokucraft.water_magic_book": "Water Magic Book",
@@ -65,10 +66,28 @@
   
   "gui.mushokucraft.water_magic_book.title": "Water Magic Book",
   "gui.mushokucraft.water_magic_book.school": "School of Water Magic",
-  "gui.mushokucraft.water_magic_book.spell_name": "Waterball",
-  "gui.mushokucraft.water_magic_book.desc1": "Creates a sphere of water and",
-  "gui.mushokucraft.water_magic_book.desc2": "launches it at the target.",
-  "gui.mushokucraft.water_magic_book.learn": "Learn Waterball",
+  "gui.mushokucraft.water_magic_book.waterball.name": "Waterball",
+  "gui.mushokucraft.water_magic_book.waterball.desc1": "Creates a sphere of water and",
+  "gui.mushokucraft.water_magic_book.waterball.desc2": "launches it at the target.",
+  "gui.mushokucraft.water_magic_book.learn": "Learn Spell",
+
+  "gui.mushokucraft.water_magic_book.water_slice.name": "Water Slice",
+  "gui.mushokucraft.water_magic_book.water_slice.desc1": "Fires a thin stream of water at",
+  "gui.mushokucraft.water_magic_book.water_slice.desc2": "extremely high pressure.",
+  "spell.mushokucraft.water_slice": "Water Slice",
+  "spell.mushokucraft.water_slice.incantation": "O great grace of water, condense and become the sharpest blade to cleave my foes! Water Slice!",
+  
+  "gui.mushokucraft.water_magic_book.icicle_break.name": "Icicle Break",
+  "gui.mushokucraft.water_magic_book.icicle_break.desc1": "Summons heavy falling icicles",
+  "gui.mushokucraft.water_magic_book.icicle_break.desc2": "that crush and pierce foes.",
+  "spell.mushokucraft.icicle_break": "Icicle Break",
+  "spell.mushokucraft.icicle_break.incantation": "O great grace of water, freeze into sharp fangs and rain down upon my enemies! Icicle Break!",
+
+  "gui.mushokucraft.water_magic_book.cumulonimbus.name": "Cumulonimbus",
+  "gui.mushokucraft.water_magic_book.cumulonimbus.desc1": "Summons a massive thunderstorm",
+  "gui.mushokucraft.water_magic_book.cumulonimbus.desc2": "that rains lightning on foes.",
+  "spell.mushokucraft.cumulonimbus": "Cumulonimbus",
+  "spell.mushokucraft.cumulonimbus.incantation": "Oh, spirits of the magnificent waters,\nI beseech the Prince of Thunder!\nGrant me my wish, bless me with thy savagery,\nand reveal to this insignificant servant a glimpse of thy power!\nLet fear strike the heart of man as thy divine hammer strikes its anvil\nand the torrential rains cover the land!\nOh, rain! Destroy and wash away everything!\nCUMULONIMBUS!",
 
   "spell.mushokucraft.waterball.incantation": "Let the great blessing of water gather where I command, and show me your pure form! Water Ball!",
   
@@ -77,9 +96,9 @@
   "spell.school.mushokucraft.fire": "School of Fire",
   "gui.mushokucraft.fire_magic_book.title": "Fire Magic Book",
   "gui.mushokucraft.fire_magic_book.school": "School of Fire Magic",
-  "gui.mushokucraft.fire_magic_book.spell_name": "Fireball",
-  "gui.mushokucraft.fire_magic_book.desc1": "Creates a blazing sphere and",
-  "gui.mushokucraft.fire_magic_book.desc2": "ignites the target on impact.",
+  "gui.mushokucraft.fire_magic_book.fireball.name": "Fireball",
+  "gui.mushokucraft.fire_magic_book.fireball.desc1": "Creates a blazing sphere and",
+  "gui.mushokucraft.fire_magic_book.fireball.desc2": "ignites the target on impact.",
   "gui.mushokucraft.fire_magic_book.learn": "Learn Fireball",
   "spell.mushokucraft.fireball.incantation": "Let the great blessing of fire be bestowed upon the place the asker desires. Fireball!",
 
@@ -88,9 +107,9 @@
   "spell.school.mushokucraft.earth": "School of Earth",
   "gui.mushokucraft.earth_magic_book.title": "Earth Magic Book",
   "gui.mushokucraft.earth_magic_book.school": "School of Earth Magic",
-  "gui.mushokucraft.earth_magic_book.spell_name": "Rock Bullet",
-  "gui.mushokucraft.earth_magic_book.desc1": "Fires a dense rock projectile",
-  "gui.mushokucraft.earth_magic_book.desc2": "that pierces through defenses.",
+  "gui.mushokucraft.earth_magic_book.rockbullet.name": "Rock Bullet",
+  "gui.mushokucraft.earth_magic_book.rockbullet.desc1": "Fires a dense rock projectile",
+  "gui.mushokucraft.earth_magic_book.rockbullet.desc2": "that pierces through defenses.",
   "gui.mushokucraft.earth_magic_book.learn": "Learn Rock Bullet",
   "spell.mushokucraft.rockbullet.incantation": "Let the great blessing of earth be bestowed upon the place the asker desires. Stone Bullet!",
 
@@ -99,9 +118,9 @@
   "spell.school.mushokucraft.wind": "School of Wind",
   "gui.mushokucraft.wind_magic_book.title": "Wind Magic Book",
   "gui.mushokucraft.wind_magic_book.school": "School of Wind Magic",
-  "gui.mushokucraft.wind_magic_book.spell_name": "Air Strike",
-  "gui.mushokucraft.wind_magic_book.desc1": "Unleashes a powerful gust of wind",
-  "gui.mushokucraft.wind_magic_book.desc2": "that knocks back enemies.",
+  "gui.mushokucraft.wind_magic_book.airstrike.name": "Air Strike",
+  "gui.mushokucraft.wind_magic_book.airstrike.desc1": "Unleashes a powerful gust of wind",
+  "gui.mushokucraft.wind_magic_book.airstrike.desc2": "that knocks back enemies.",
   "gui.mushokucraft.wind_magic_book.learn": "Learn Air Strike",
   "spell.mushokucraft.airstrike.incantation": "O invisible spirit of the wind, show your strength and blow away my enemy! Air Strike!",
   

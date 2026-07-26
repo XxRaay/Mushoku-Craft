@@ -49,9 +49,10 @@ public class LearningManager {
                     Spell spell = ModSpells.SPELLS.get(cast.spellId);
                     PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
                     float schoolMastery = mastery.getSchoolMastery(spell.getSchool());
-                    float speedModifier = MasteryCalculator.calculateQteSpeedModifier(schoolMastery);
-                    float sizeModifier = MasteryCalculator.calculateQteSizeModifier(schoolMastery);
-                    NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new QteTriggerPacket(randomKey, speedModifier, sizeModifier));
+                    float speedModifier = MasteryCalculator.calculateQteSpeedModifier(schoolMastery, spell.getRank().getTier());
+                    float targetSizeModifier = MasteryCalculator.calculateQteTargetSize(spell.getRank().getTier());
+                    float perfectMultiplier = 0.4f * MasteryCalculator.calculateQteSizeModifier(schoolMastery);
+                    NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new QteTriggerPacket(randomKey, speedModifier, targetSizeModifier, perfectMultiplier));
                     return;
                 }
                 --cast.remainingTicks;
@@ -96,16 +97,33 @@ public class LearningManager {
                 if (result == 2) {
                     cast.remainingTicks = Math.max(0, cast.remainingTicks - (Integer)MushokuConfig.QTE_PERFECT_TIME_BONUS_TICKS.get());
                 }
-                LearningManager.scheduleNextFizzle(cast, (Double)MushokuConfig.LEARNING_SUCCESS_BASE_CHANCE.get());
+                    PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
+                    Spell spell = ModSpells.SPELLS.get(cast.spellId);
+                    float tierPenalty = MasteryCalculator.calculateTierPenalty(spell, mastery);
+                    double successChance = Math.max(0.0, MushokuConfig.LEARNING_SUCCESS_BASE_CHANCE.get() - tierPenalty);
+                    LearningManager.scheduleNextFizzle(cast, successChance);
             }
         }
     }
 
     private static void scheduleNextFizzle(ActiveLearning cast, double successChance) {
-        boolean success;
-        boolean bl = success = Math.random() < successChance;
-        if (!success && cast.remainingTicks > 20) {
-            int ticksFromNow = 10 + (int)(Math.random() * (double)(cast.remainingTicks - 20));
+        boolean success = Math.random() < successChance;
+        if (!success && cast.remainingTicks > 5) {
+            int ticksFromNow;
+            if (successChance <= 0.0) {
+                // 100% fizzle -> QTE "on every letter" (very fast, 2-5 ticks)
+                ticksFromNow = 2 + (int)(Math.random() * 4.0);
+            } else if (successChance < 0.21) {
+                // > 79% fizzle -> QTE "on every word" (fast, 10-20 ticks)
+                ticksFromNow = 10 + (int)(Math.random() * 11.0);
+            } else {
+                // Normal
+                int maxDelay = Math.max(1, cast.remainingTicks - 20);
+                ticksFromNow = 15 + (int)(Math.random() * (double)Math.min(40, maxDelay));
+            }
+            
+            ticksFromNow = Math.min(ticksFromNow, cast.remainingTicks - 1);
+            
             cast.fizzleTick = cast.totalTicks - cast.remainingTicks + ticksFromNow;
             cast.qteTriggerTicks.add(cast.remainingTicks - ticksFromNow);
             Collections.sort(cast.qteTriggerTicks);
@@ -130,7 +148,9 @@ public class LearningManager {
         ArrayList<Integer> qteTicks = new ArrayList<Integer>();
         ActiveLearning castTask = new ActiveLearning(spellId, success, activeTicks, 0, qteTicks);
         learningTasks.put(player.getUUID(), castTask);
-        LearningManager.scheduleNextFizzle(castTask, (Double)MushokuConfig.LEARNING_SUCCESS_BASE_CHANCE.get());
+        float tierPenalty = MasteryCalculator.calculateTierPenalty(spell, mastery);
+        double successChance = Math.max(0.0, MushokuConfig.LEARNING_SUCCESS_BASE_CHANCE.get() - tierPenalty);
+        LearningManager.scheduleNextFizzle(castTask, successChance);
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, activeTicks + 10, 1, false, false, true));
         NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new LearnSpellSyncPacket(spellId, 0));
     }

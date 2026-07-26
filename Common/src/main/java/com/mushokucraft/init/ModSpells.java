@@ -24,6 +24,15 @@ public class ModSpells {
             .projectile(com.mushokucraft.magic.entity.FireballEntity::new, 1.5f, 1.0f)
             .build());
 
+    public static final Spell WATER_SLICE = register(new Spell.Builder(
+            ResourceLocation.fromNamespaceAndPath("mushokucraft", "water_slice"), MagicSchool.WATER, SpellRank.INTERMEDIATE)
+            .castTime(com.mushokucraft.config.MushokuConfig.WATER_SLICE_CAST_TIME_TICKS.get().floatValue())
+            .manaCost(com.mushokucraft.config.MushokuConfig.WATER_SLICE_MANA_COST.get().floatValue())
+            .fizzleChance(com.mushokucraft.config.MushokuConfig.WATER_SLICE_FIZZLE_CHANCE.get().floatValue())
+            .incantation("spell.mushokucraft.water_slice.incantation")
+            .projectile(com.mushokucraft.magic.entity.WaterSliceEntity::new, 3.0f, 0.0f)
+            .build());
+
     public static final Spell ROCK_BULLET = register(new Spell.Builder(
             ResourceLocation.fromNamespaceAndPath("mushokucraft", "rockbullet"), MagicSchool.EARTH, SpellRank.ELEMENTARY)
             .castTime(40f).manaCost(10f).fizzleChance(0.3f)
@@ -36,6 +45,26 @@ public class ModSpells {
             .castTime(40f).manaCost(10f).fizzleChance(0.3f)
             .incantation("spell.mushokucraft.airstrike.incantation")
             .projectile(com.mushokucraft.magic.entity.AirStrikeEntity::new, 2.5f, 0.0f)
+            .build());
+
+    public static final Spell ICICLE_BREAK = register(new Spell.Builder(
+            ResourceLocation.fromNamespaceAndPath("mushokucraft", "icicle_break"), MagicSchool.WATER, SpellRank.ADVANCED)
+            .castTime(com.mushokucraft.config.MushokuConfig.ICICLE_BREAK_CAST_TIME_TICKS.get().floatValue())
+            .manaCost(com.mushokucraft.config.MushokuConfig.ICICLE_BREAK_MANA_COST.get().floatValue())
+            .fizzleChance(com.mushokucraft.config.MushokuConfig.ICICLE_BREAK_FIZZLE_CHANCE.get().floatValue())
+            .incantation("spell.mushokucraft.icicle_break.incantation")
+            .channeled(false)
+            .projectile(com.mushokucraft.magic.entity.IcicleBreakTargetEntity::new, 0.0f, 0.0f)
+            .build());
+
+    public static final Spell CUMULONIMBUS = register(new Spell.Builder(
+            ResourceLocation.fromNamespaceAndPath("mushokucraft", "cumulonimbus"), MagicSchool.WATER, SpellRank.SAINT)
+            .castTime(com.mushokucraft.config.MushokuConfig.CUMULONIMBUS_CAST_TIME_TICKS.get().floatValue())
+            .manaCost(com.mushokucraft.config.MushokuConfig.CUMULONIMBUS_MANA_COST.get().floatValue())
+            .fizzleChance(com.mushokucraft.config.MushokuConfig.CUMULONIMBUS_FIZZLE_CHANCE.get().floatValue())
+            .incantation("spell.mushokucraft.cumulonimbus.incantation")
+            .channeled(true)
+            .projectile(com.mushokucraft.magic.entity.CumulonimbusStormEntity::new, 0.0f, 0.0f)
             .build());
 
     public static final Spell LONGSWORD_LIGHT = register(new Spell.Builder(

@@ -49,7 +49,7 @@ public class FireballEntity extends AbstractMagicProjectileEntity {
                     this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE).getHolderOrThrow(com.mushokucraft.init.ModDamageTypes.MAGIC),
                     this, this.getOwner()
                 );
-                target.hurt(source, 6.0F * scale);
+                target.hurt(source, 3.0F * scale);
                 target.igniteForSeconds((int)(5 * scale)); // Ignite target
             }
             if (scale > 2.0f) {

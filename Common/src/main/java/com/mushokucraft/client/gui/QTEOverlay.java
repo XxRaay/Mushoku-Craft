@@ -26,7 +26,7 @@ public class QTEOverlay {
         
         // Base radii
         float baseCentralRadius = HudConstants.QTE_CENTRAL_RADIUS_MULT * targetSize;
-        float baseGreenRadius = HudConstants.QTE_GREEN_RADIUS_MULT * targetSize;
+        float baseGreenRadius = baseCentralRadius * ClientCastState.qtePerfectMultiplier;
         float shrinkingRadius = HudConstants.QTE_SHRINKING_BASE_RADIUS * scale;
         
         // Ensure green radius is less than central radius
@@ -41,7 +41,7 @@ public class QTEOverlay {
         // 3. Draw shrinking circle
         int shrinkColor = HudConstants.QTE_COLOR_SHRINK_DEFAULT;
         if (scale <= targetSize) {
-            if (scale <= HudConstants.QTE_PERFECT_MULTIPLIER * targetSize) {
+            if (scale <= ClientCastState.qtePerfectMultiplier * targetSize) {
                 shrinkColor = HudConstants.QTE_COLOR_SHRINKING_PERFECT;
             } else {
                 shrinkColor = HudConstants.QTE_COLOR_SHRINKING_GOOD;
@@ -54,7 +54,12 @@ public class QTEOverlay {
         // 4. Draw key letter
         String keyToPress = ClientCastState.currentQteKey.toUpperCase();
         int textWidth = mc.font.width(keyToPress);
-        guiGraphics.drawString(mc.font, keyToPress, centerX - textWidth / 2, centerY - 4, HudConstants.QTE_COLOR_TEXT);
+        
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(centerX, centerY - 40, 0.0F);
+        guiGraphics.pose().scale(2.0F, 2.0F, 2.0F);
+        guiGraphics.drawString(mc.font, keyToPress, -textWidth / 2, 0, HudConstants.QTE_COLOR_TEXT, true);
+        guiGraphics.pose().popPose();
         
         RenderSystem.disableBlend();
     }
