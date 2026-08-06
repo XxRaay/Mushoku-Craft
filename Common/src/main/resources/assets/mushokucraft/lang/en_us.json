@@ -53,6 +53,7 @@
 
   "block.mushokucraft.aquamarine_ore": "Aquamarine Ore",
   "block.mushokucraft.deepslate_aquamarine_ore": "Deepslate Aquamarine Ore",
+  "block.mushokucraft.modular_anvil": "Modular Anvil",
 
   "command.mushokucraft.mana.set.success": "Set mana for %s to %s",
   "command.mushokucraft.mana.max.success": "Set max mana for %s to %s",
@@ -121,8 +122,14 @@
   "gui.mushokucraft.wind_magic_book.airstrike.name": "Air Strike",
   "gui.mushokucraft.wind_magic_book.airstrike.desc1": "Unleashes a powerful gust of wind",
   "gui.mushokucraft.wind_magic_book.airstrike.desc2": "that knocks back enemies.",
-  "gui.mushokucraft.wind_magic_book.learn": "Learn Air Strike",
+  "gui.mushokucraft.wind_magic_book.learn": "Learn Spell",
   "spell.mushokucraft.airstrike.incantation": "O invisible spirit of the wind, show your strength and blow away my enemy! Air Strike!",
+  
+  "gui.mushokucraft.wind_magic_book.air_cushion.name": "Air Cushion",
+  "gui.mushokucraft.wind_magic_book.air_cushion.desc1": "Forms a barrier of wind at your feet",
+  "gui.mushokucraft.wind_magic_book.air_cushion.desc2": "to protect from falls and boost speed.",
+  "spell.mushokucraft.air_cushion": "Air Cushion",
+  "spell.mushokucraft.air_cushion.incantation": "",
   
   "item.mushokucraft.sabertooth_wolf_spawn_egg": "Sabertooth Wolf Spawn Egg",
   "entity.mushokucraft.sabertooth_wolf": "Sabertooth Wolf",

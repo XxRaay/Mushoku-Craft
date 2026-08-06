@@ -54,6 +54,7 @@
 
   "block.mushokucraft.aquamarine_ore": "Аквамариновая руда",
   "block.mushokucraft.deepslate_aquamarine_ore": "Глубинная аквамариновая руда",
+  "block.mushokucraft.modular_anvil": "Модульная наковальня",
 
   "command.mushokucraft.mana.set.success": "Мана для игрока %s установлена на %s",
   "command.mushokucraft.mana.max.success": "Максимальная мана для игрока %s установлена на %s",
@@ -124,6 +125,12 @@
   "gui.mushokucraft.wind_magic_book.airstrike.desc2": "отбрасывающий врагов.",
   "gui.mushokucraft.wind_magic_book.learn": "Изучить",
   "spell.mushokucraft.airstrike.incantation": "О невидимый дух ветра, яви свою силу и отбрось моего врага! Воздушный удар!",
+  
+  "gui.mushokucraft.wind_magic_book.air_cushion.name": "Воздушная подушка",
+  "gui.mushokucraft.wind_magic_book.air_cushion.desc1": "Создает барьер из ветра под ногами,",
+  "gui.mushokucraft.wind_magic_book.air_cushion.desc2": "защищая от падений и ускоряя мага.",
+  "spell.mushokucraft.air_cushion": "Воздушная подушка",
+  "spell.mushokucraft.air_cushion.incantation": "",
   
   "item.mushokucraft.sabertooth_wolf_spawn_egg": "Яйцо призыва саблезубого волка",
   "entity.mushokucraft.sabertooth_wolf": "Саблезубый волк",

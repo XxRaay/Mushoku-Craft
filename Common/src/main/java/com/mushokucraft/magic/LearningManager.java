@@ -68,10 +68,12 @@ public class LearningManager {
                     if (finalSuccess) {
                         PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
                         mastery.addSpellMastery(cast.spellId, ((Double)MushokuConfig.LEARNING_MASTERY_GAIN.get()).floatValue());
-                        Projectile projectile = spell.getProjectileFactory().create(player.level(), player);
-                        Vec3 look = player.getLookAngle();
-                        projectile.shoot(look.x, look.y, look.z, spell.getBaseSpeed(), spell.getBaseInaccuracy());
-                        player.level().addFreshEntity((Entity)projectile);
+                        if (spell.getProjectileFactory() != null) {
+                            Projectile projectile = spell.getProjectileFactory().create(player.level(), player);
+                            Vec3 look = player.getLookAngle();
+                            projectile.shoot(look.x, look.y, look.z, spell.getBaseSpeed(), spell.getBaseInaccuracy());
+                            player.level().addFreshEntity((Entity)projectile);
+                        }
                     }
                     NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new LearnSpellResultPacket(finalSuccess, cast.spellId));
                 }
@@ -99,9 +101,11 @@ public class LearningManager {
                 }
                     PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
                     Spell spell = ModSpells.SPELLS.get(cast.spellId);
-                    float tierPenalty = MasteryCalculator.calculateTierPenalty(spell, mastery);
-                    double successChance = Math.max(0.0, MushokuConfig.LEARNING_SUCCESS_BASE_CHANCE.get() - tierPenalty);
-                    LearningManager.scheduleNextFizzle(cast, successChance);
+                    if (!cast.spellId.getPath().equals("air_cushion")) {
+                        float tierPenalty = MasteryCalculator.calculateTierPenalty(spell, mastery);
+                        double successChance = Math.max(0.0, MushokuConfig.LEARNING_SUCCESS_BASE_CHANCE.get() - tierPenalty);
+                        LearningManager.scheduleNextFizzle(cast, successChance);
+                    }
             }
         }
     }
@@ -148,9 +152,17 @@ public class LearningManager {
         ArrayList<Integer> qteTicks = new ArrayList<Integer>();
         ActiveLearning castTask = new ActiveLearning(spellId, success, activeTicks, 0, qteTicks);
         learningTasks.put(player.getUUID(), castTask);
-        float tierPenalty = MasteryCalculator.calculateTierPenalty(spell, mastery);
-        double successChance = Math.max(0.0, MushokuConfig.LEARNING_SUCCESS_BASE_CHANCE.get() - tierPenalty);
-        LearningManager.scheduleNextFizzle(castTask, successChance);
+        if (spellId.getPath().equals("air_cushion")) {
+            qteTicks.add(16);
+            qteTicks.add(32);
+            qteTicks.add(48);
+            qteTicks.add(64);
+            castTask.fizzleTick = 64;
+        } else {
+            float tierPenalty = MasteryCalculator.calculateTierPenalty(spell, mastery);
+            double successChance = Math.max(0.0, MushokuConfig.LEARNING_SUCCESS_BASE_CHANCE.get() - tierPenalty);
+            LearningManager.scheduleNextFizzle(castTask, successChance);
+        }
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, activeTicks + 10, 1, false, false, true));
         NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new LearnSpellSyncPacket(spellId, 0));
     }

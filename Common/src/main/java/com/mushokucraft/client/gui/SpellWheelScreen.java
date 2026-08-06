@@ -113,6 +113,18 @@ public class SpellWheelScreen extends Screen {
         emptySlot.isUnlocked = false;
         emptySlot.descColor = 0x555555;
         this.slots.add(emptySlot);
+        
+        ResourceLocation airCushionIcon = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/spell/air_cushion.png");
+        float airCushionMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "air_cushion")) : 0f;
+        boolean hasAirCushion = airCushionMastery > 0f;
+        boolean isAirCushionActive = mastery != null && mastery.isAirCushionActive();
+
+        SubSlot airCushionSub = new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "air_cushion"), airCushionIcon, Component.translatable("gui.mushokucraft.wind_magic_book.air_cushion.name"), airCushionMastery, hasAirCushion);
+        airCushionSub.action = () -> {
+            NetworkManager.sendToServer((CustomPacketPayload)new com.mushokucraft.network.ToggleAirCushionPacket());
+        };
+        airCushionSub.isActive = isAirCushionActive;
+        windSlot.subSlots.add(airCushionSub);
 
         SwordStyle activeStance = ClientStanceState.selectedStance;
         float currentStanceMastery = (mastery != null && activeStance != null) ? mastery.getStanceMastery(activeStance) : 0f;
@@ -197,7 +209,11 @@ public class SpellWheelScreen extends Screen {
             if (this.hoveredSubSlot < catSlot.subSlots.size()) {
                 SubSlot sub = catSlot.subSlots.get(this.hoveredSubSlot);
                 if (sub.isUnlocked) {
-                    ClientSpellState.selectedSpell = sub.spellId;
+                    if (sub.action != null) {
+                        sub.action.run();
+                    } else {
+                        ClientSpellState.selectedSpell = sub.spellId;
+                    }
                 }
             }
         } else if (this.hoveredMainSlot != -1) {
@@ -350,7 +366,9 @@ public class SpellWheelScreen extends Screen {
                 
                 int color = isHovered ? 0xAA222222 : 0x55AAAAAA;
                 if (sub.isUnlocked) {
-                    if (sub.mastery >= 1.0f) {
+                    if (sub.isActive) {
+                        color = isHovered ? 0xDD44FF44 : 0x9922CC22;
+                    } else if (sub.mastery >= 1.0f) {
                         color = isHovered ? 0xDDFFCC00 : 0x99FFAA00;
                     } else if (sub.mastery >= 0.5f) {
                         color = isHovered ? 0xDDAAEEFF : 0x9988CCFF;
@@ -444,6 +462,8 @@ public class SpellWheelScreen extends Screen {
         Component name;
         float mastery;
         boolean isUnlocked;
+        Runnable action;
+        boolean isActive;
 
         public SubSlot(ResourceLocation spellId, ResourceLocation icon, Component name, float mastery, boolean isUnlocked) {
             this.spellId = spellId;

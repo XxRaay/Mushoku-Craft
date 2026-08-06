@@ -18,7 +18,7 @@ public class ModItems {
     public static final Supplier<Item> WATER_MAGIC_BOOK = ITEMS.register("water_magic_book", () -> new MagicBookItem(new Item.Properties().stacksTo(1), "water", java.util.List.of("waterball", "water_slice", "icicle_break", "cumulonimbus")));
     public static final Supplier<Item> FIRE_MAGIC_BOOK = ITEMS.register("fire_magic_book", () -> new MagicBookItem(new Item.Properties().stacksTo(1), "fire", java.util.List.of("fireball")));
     public static final Supplier<Item> EARTH_MAGIC_BOOK = ITEMS.register("earth_magic_book", () -> new MagicBookItem(new Item.Properties().stacksTo(1), "earth", java.util.List.of("rockbullet")));
-    public static final Supplier<Item> WIND_MAGIC_BOOK = ITEMS.register("wind_magic_book", () -> new MagicBookItem(new Item.Properties().stacksTo(1), "wind", java.util.List.of("airstrike")));
+    public static final Supplier<Item> WIND_MAGIC_BOOK = ITEMS.register("wind_magic_book", () -> new MagicBookItem(new Item.Properties().stacksTo(1), "wind", java.util.List.of("airstrike", "air_cushion")));
     public static final Supplier<Item> SABERTOOTH_WOLF_SPAWN_EGG = ITEMS.register("sabertooth_wolf_spawn_egg", () -> new ArchitecturySpawnEggItem(ModEntities.SABERTOOTH_WOLF, 9139029, 4864810, new Item.Properties()));
     public static final Supplier<Item> SWORD_GOD_SCROLL = ITEMS.register("sword_god_scroll", () -> new SwordGodScrollItem(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC)));
 
@@ -26,6 +26,8 @@ public class ModItems {
 
     public static final Supplier<Item> MAGE_MEAT = ITEMS.register("mage_meat", () -> new Item(new Item.Properties().food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(3).saturationModifier(0.3f).build())));
     public static final Supplier<Item> SABERTOOTH_LEATHER = ITEMS.register("sabertooth_leather", () -> new Item(new Item.Properties()));
+
+    public static final Supplier<Item> MODULAR_ANVIL = ITEMS.register("modular_anvil", () -> new net.minecraft.world.item.BlockItem(ModBlocks.MODULAR_ANVIL.get(), new Item.Properties()));
 
     public static void register() {
         ITEMS.register();

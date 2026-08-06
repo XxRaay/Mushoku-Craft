@@ -22,33 +22,46 @@ public class ModClientEvents {
             if (mc.level != null && !mc.isPaused()) {
                 for (Player player : mc.level.players()) {
                     PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
-                    if (mastery == null || !mastery.isToukiActive()) continue;
-                    SwordStyle stance = mastery.getActiveStance();
-                    SimpleParticleType particle = ParticleTypes.ENCHANT;
-                    if (stance == SwordStyle.SWORD_GOD) {
-                        particle = ParticleTypes.CRIT;
-                    } else if (stance == SwordStyle.WATER_GOD) {
-                        particle = ParticleTypes.SPLASH;
-                    } else if (stance == SwordStyle.NORTH_GOD) {
-                        particle = ParticleTypes.SQUID_INK;
-                    }
-                    for (int i = 0; i < 2; ++i) {
-                        double dx = (mc.level.random.nextDouble() - 0.5) * 1.5;
-                        double dy = mc.level.random.nextDouble() * 2.0;
-                        double dz = (mc.level.random.nextDouble() - 0.5) * 1.5;
-                        double vx = 0.0;
-                        double vy = 0.1;
-                        double vz = 0.0;
+                    if (mastery == null) continue;
+
+                    if (mastery.isToukiActive()) {
+                        SwordStyle stance = mastery.getActiveStance();
+                        SimpleParticleType particle = ParticleTypes.ENCHANT;
                         if (stance == SwordStyle.SWORD_GOD) {
-                            vx = (mc.level.random.nextDouble() - 0.5) * 0.2;
-                            vy = mc.level.random.nextDouble() * 0.2;
-                            vz = (mc.level.random.nextDouble() - 0.5) * 0.2;
+                            particle = ParticleTypes.CRIT;
+                        } else if (stance == SwordStyle.WATER_GOD) {
+                            particle = ParticleTypes.SPLASH;
                         } else if (stance == SwordStyle.NORTH_GOD) {
-                            vx = (mc.level.random.nextDouble() - 0.5) * 0.1;
-                            vy = (mc.level.random.nextDouble() - 0.5) * 0.1;
-                            vz = (mc.level.random.nextDouble() - 0.5) * 0.1;
+                            particle = ParticleTypes.SQUID_INK;
                         }
-                        mc.level.addParticle((ParticleOptions)particle, player.getX() + dx, player.getY() + dy, player.getZ() + dz, vx, vy, vz);
+                        for (int i = 0; i < 2; ++i) {
+                            double dx = (mc.level.random.nextDouble() - 0.5) * 1.5;
+                            double dy = mc.level.random.nextDouble() * 2.0;
+                            double dz = (mc.level.random.nextDouble() - 0.5) * 1.5;
+                            double vx = 0.0;
+                            double vy = 0.1;
+                            double vz = 0.0;
+                            if (stance == SwordStyle.SWORD_GOD) {
+                                vx = (mc.level.random.nextDouble() - 0.5) * 0.2;
+                                vy = mc.level.random.nextDouble() * 0.2;
+                                vz = (mc.level.random.nextDouble() - 0.5) * 0.2;
+                            } else if (stance == SwordStyle.NORTH_GOD) {
+                                vx = (mc.level.random.nextDouble() - 0.5) * 0.1;
+                                vy = (mc.level.random.nextDouble() - 0.5) * 0.1;
+                                vz = (mc.level.random.nextDouble() - 0.5) * 0.1;
+                            }
+                            mc.level.addParticle((ParticleOptions)particle, player.getX() + dx, player.getY() + dy, player.getZ() + dz, vx, vy, vz);
+                        }
+                    }
+                    
+                    if (mastery.isAirCushionActive()) {
+                        // Wind particles at feet
+                        for (int i = 0; i < 3; ++i) {
+                            double dx = (mc.level.random.nextDouble() - 0.5) * 1.2;
+                            double dy = mc.level.random.nextDouble() * 0.5; // close to ground
+                            double dz = (mc.level.random.nextDouble() - 0.5) * 1.2;
+                            mc.level.addParticle((ParticleOptions)ParticleTypes.CLOUD, player.getX() + dx, player.getY() + dy, player.getZ() + dz, 0, 0.05, 0);
+                        }
                     }
                 }
             }

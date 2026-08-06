@@ -59,8 +59,12 @@ public class ModGameEvents {
                     }
                     player2.displayClientMessage((Component)Component.literal((String)"\u00a7c\u0421\u0442\u0438\u043b\u044c \u0411\u043e\u0433\u0430 \u041c\u0435\u0447\u0430 \u043d\u0435 \u043f\u043e\u0437\u0432\u043e\u043b\u044f\u0435\u0442 \u0437\u0430\u043d\u0438\u043c\u0430\u0442\u044c \u0432\u0442\u043e\u0440\u0443\u044e \u0440\u0443\u043a\u0443!"), true);
                 }
+                boolean syncNeeded = false;
+                if (com.mushokucraft.magic.AirCushionManager.tick(player2, data)) {
+                    syncNeeded = true;
+                }
+                
                 if (player2.tickCount % 20 == 0) {
-                    boolean syncNeeded = false;
                     if (ToukiManager.tick(player2, data)) {
                         syncNeeded = true;
                     }
@@ -68,9 +72,10 @@ public class ModGameEvents {
                         data.regenMana(data.getManaRegenRate() * 20.0f);
                         syncNeeded = true;
                     }
-                    if (syncNeeded) {
-                        ModGameEvents.syncMana(player2, data);
-                    }
+                }
+                
+                if (syncNeeded) {
+                    ModGameEvents.syncMana(player2, data);
                 }
             }
         });

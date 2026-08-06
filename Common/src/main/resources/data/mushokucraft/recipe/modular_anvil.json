@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "OOO",
+    "AKA",
+    "JNJ"
+  ],
+  "key": {
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "A": {
+      "item": "minecraft:diamond"
+    },
+    "K": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "J": {
+      "item": "minecraft:iron_block"
+    },
+    "N": {
+      "item": "minecraft:anvil"
+    }
+  },
+  "result": {
+    "id": "mushokucraft:modular_anvil",
+    "count": 1
+  }
+}

@@ -65,6 +65,14 @@ public class ModNetworking {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncToukiPacket.TYPE, SyncToukiPacket.STREAM_CODEC, (packet, context) -> {
             context.queue(() -> ClientPayloadHandler.handleSyncTouki(packet));
         });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, ToggleAirCushionPacket.TYPE, ToggleAirCushionPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handleServer(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncAirCushionPacket.TYPE, SyncAirCushionPacket.STREAM_CODEC, (packet, context) -> {
+            context.queue(() -> packet.handleClient());
+        });
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncFullMasteryPacket.TYPE, SyncFullMasteryPacket.STREAM_CODEC, (packet, context) -> {
             context.queue(() -> ClientPayloadHandler.handleSyncFullMastery(packet));
         });

@@ -99,4 +99,12 @@ public class MushokuConfig {
     public static final ConfigValue<Integer> CARCASS_MAX_USES = new ConfigValue<>(3);
     public static final ConfigValue<Double> THROWN_SWORD_DAMAGE = new ConfigValue<>(6.0);
     public static final ConfigValue<Integer> THROWN_SWORD_PICKUP_DELAY = new ConfigValue<>(10);
+
+    // Air Cushion Configs
+    public static final ConfigValue<Double> AIR_CUSHION_MANA_DRAIN_BASE = new ConfigValue<>(5.0);
+    public static final ConfigValue<Double> AIR_CUSHION_MANA_DRAIN_HEIGHT_MULT = new ConfigValue<>(2.0);
+    public static final ConfigValue<Double> AIR_CUSHION_MASTERY_GAIN = new ConfigValue<>(0.5); // per second
+    public static final ConfigValue<Double> AIR_CUSHION_SPEED_MULT_MAX = new ConfigValue<>(1.3);
+    public static final ConfigValue<Double> AIR_CUSHION_SPEED_MULT_BASE = new ConfigValue<>(1.0);
+    public static final ConfigValue<Integer> AIR_CUSHION_BLOCK_LIFETIME = new ConfigValue<>(14); // 0.7s = 14 ticks
 }

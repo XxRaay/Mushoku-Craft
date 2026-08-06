@@ -31,6 +31,7 @@ public class PlayerMasteryData
     private boolean unlockedWaterGod = false;
     private boolean unlockedNorthGod = false;
     private boolean isToukiActive = false;
+    private boolean isAirCushionActive = false;
     private int shieldBlocks = 0;
     private final Map<ResourceLocation, Long> itemCooldownEnds = new HashMap<ResourceLocation, Long>();
 
@@ -201,6 +202,14 @@ public class PlayerMasteryData
         this.isToukiActive = active;
     }
 
+    public boolean isAirCushionActive() {
+        return this.isAirCushionActive;
+    }
+
+    public void setAirCushionActive(boolean active) {
+        this.isAirCushionActive = active;
+    }
+
     public int getShieldBlocks() {
         return this.shieldBlocks;
     }
@@ -322,6 +331,7 @@ public class PlayerMasteryData
             }
         }
         this.isToukiActive = false;
+        this.isAirCushionActive = false;
     }
 }
 

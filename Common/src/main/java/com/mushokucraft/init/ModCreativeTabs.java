@@ -22,6 +22,7 @@ public class ModCreativeTabs {
         output.accept((ItemLike)ModItems.HUNTING_KNIFE.get());
         output.accept((ItemLike)ModItems.MAGE_MEAT.get());
         output.accept((ItemLike)ModItems.SABERTOOTH_LEATHER.get());
+        output.accept((ItemLike)ModItems.MODULAR_ANVIL.get());
     }).build());
 
     public static void register() {

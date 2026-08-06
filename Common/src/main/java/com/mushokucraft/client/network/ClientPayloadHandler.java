@@ -100,6 +100,19 @@ public class ClientPayloadHandler {
         }
     }
 
+    public static void handleSyncAirCushion(com.mushokucraft.network.SyncAirCushionPacket packet) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null) {
+            net.minecraft.world.entity.Entity entity = mc.level.getEntity(packet.entityId());
+            if (entity instanceof Player player) {
+                PlayerMasteryData data = PlayerMasteryProvider.get(player);
+                if (data != null) {
+                    data.setAirCushionActive(packet.isActive());
+                }
+            }
+        }
+    }
+
     public static void handleTriggerParry(com.mushokucraft.network.TriggerParryPacket packet) {
         CombatInputHandler.playParryAnimation();
     }

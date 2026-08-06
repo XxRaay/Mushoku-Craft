@@ -79,6 +79,12 @@ public class ModSpells {
             .incantation("spell.mushokucraft.longsword_of_silence.incantation")
             .build());
 
+    public static final Spell AIR_CUSHION = register(new Spell.Builder(
+            ResourceLocation.fromNamespaceAndPath("mushokucraft", "air_cushion"), MagicSchool.WIND, SpellRank.INTERMEDIATE)
+            .castTime(80f).manaCost(0f).fizzleChance(0f)
+            .incantation("spell.mushokucraft.air_cushion.incantation")
+            .build());
+
     private static Spell register(Spell spell) {
         SPELLS.put(spell.getId(), spell);
         return spell;
