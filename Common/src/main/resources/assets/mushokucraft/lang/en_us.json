@@ -55,6 +55,17 @@
   "block.mushokucraft.deepslate_aquamarine_ore": "Deepslate Aquamarine Ore",
   "block.mushokucraft.modular_anvil": "Modular Anvil",
 
+  "gui.mushokucraft.modular_anvil.title": "Modular Anvil",
+  "gui.mushokucraft.modular_anvil.blade": "Blade",
+  "gui.mushokucraft.modular_anvil.handle": "Handle",
+  "gui.mushokucraft.modular_anvil.core": "Monster Core",
+  "gui.mushokucraft.modular_anvil.forge": "⚒ FORGE ⚒",
+  "gui.mushokucraft.modular_anvil.repair": "Repair",
+  "gui.mushokucraft.modular_anvil.disassemble": "Disassemble",
+  "gui.mushokucraft.modular_anvil.name_placeholder": "Enter weapon name...",
+  "gui.mushokucraft.modular_anvil.mana": "Mana: %s",
+  "gui.mushokucraft.modular_anvil.smith": "Smith: %s",
+
   "command.mushokucraft.mana.set.success": "Set mana for %s to %s",
   "command.mushokucraft.mana.max.success": "Set max mana for %s to %s",
   "command.mushokucraft.mana.regen.success": "Set mana regen rate for %s to %s",

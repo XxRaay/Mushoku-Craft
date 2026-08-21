@@ -56,6 +56,17 @@
   "block.mushokucraft.deepslate_aquamarine_ore": "Глубинная аквамариновая руда",
   "block.mushokucraft.modular_anvil": "Модульная наковальня",
 
+  "gui.mushokucraft.modular_anvil.title": "Модульная наковальня",
+  "gui.mushokucraft.modular_anvil.blade": "Лезвие",
+  "gui.mushokucraft.modular_anvil.handle": "Рукоять",
+  "gui.mushokucraft.modular_anvil.core": "Ядро монстра",
+  "gui.mushokucraft.modular_anvil.forge": "⚒ КОВАТЬ ⚒",
+  "gui.mushokucraft.modular_anvil.repair": "Починить",
+  "gui.mushokucraft.modular_anvil.disassemble": "Разобрать",
+  "gui.mushokucraft.modular_anvil.name_placeholder": "Введите имя оружия...",
+  "gui.mushokucraft.modular_anvil.mana": "Мана: %s",
+  "gui.mushokucraft.modular_anvil.smith": "Кузнец: %s",
+
   "command.mushokucraft.mana.set.success": "Мана для игрока %s установлена на %s",
   "command.mushokucraft.mana.max.success": "Максимальная мана для игрока %s установлена на %s",
   "command.mushokucraft.mana.regen.success": "Скорость регенерации маны для игрока %s установлена на %s",

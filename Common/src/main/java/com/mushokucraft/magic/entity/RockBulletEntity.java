@@ -31,12 +31,18 @@ public class RockBulletEntity extends AbstractMagicProjectileEntity {
     @Override
     public void tick() {
         float scale = this.getChargeScale();
-        this.spinTicks += 10 + (int)(scale * 20);
+        // Only spin when flying, not while charging
+        if (!this.isCharging()) {
+            this.spinTicks += 10 + (int)(scale * 20);
+        }
         super.tick();
     }
 
     @Override
     public float getSpin(float partialTicks) {
+        if (this.isCharging()) {
+            return 0f; // No spin while charging — face forward like a bullet
+        }
         return this.spinTicks + partialTicks * (10 + this.getChargeScale() * 20);
     }
 

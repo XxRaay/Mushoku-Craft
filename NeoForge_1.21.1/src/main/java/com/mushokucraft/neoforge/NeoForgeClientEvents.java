@@ -13,6 +13,11 @@ import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsE
 public class NeoForgeClientEvents {
 
     @SubscribeEvent
+    public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+        event.register(com.mushokucraft.init.ModMenuTypes.MODULAR_ANVIL.get(), com.mushokucraft.client.gui.ModularAnvilScreen::new);
+    }
+
+    @SubscribeEvent
     public static void registerClientExtensions(RegisterClientExtensionsEvent event) {
         event.registerItem(new IClientItemExtensions() {
             private MagicBookItemRenderer renderer;

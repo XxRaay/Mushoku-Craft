@@ -61,7 +61,8 @@ public class ClientPayloadHandler {
         if (mc.player != null) {
             if (packet.success()) {
                 PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(mc.player);
-                mastery.addSpellMastery(packet.spellId(), 0.1f);
+                float gain = packet.spellId().getPath().equals("air_cushion") ? 0.01f : 0.1f;
+                mastery.addSpellMastery(packet.spellId(), gain);
             } else {
                 ItemStack item = mc.player.getMainHandItem();
                 Item item2 = item.getItem();

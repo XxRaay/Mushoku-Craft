@@ -42,4 +42,22 @@ public class ModularAnvilBlock extends HorizontalDirectionalBlock {
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
+
+    @Override
+    public net.minecraft.world.InteractionResult useWithoutItem(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hitResult) {
+        if (!level.isClientSide) {
+            player.openMenu(new net.minecraft.world.MenuProvider() {
+                @Override
+                public net.minecraft.network.chat.Component getDisplayName() {
+                    return net.minecraft.network.chat.Component.translatable("gui.mushokucraft.modular_anvil.title");
+                }
+
+                @Override
+                public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int id, net.minecraft.world.entity.player.Inventory inventory, net.minecraft.world.entity.player.Player player) {
+                    return new com.mushokucraft.crafting.ModularAnvilMenu(id, inventory);
+                }
+            });
+        }
+        return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
+    }
 }

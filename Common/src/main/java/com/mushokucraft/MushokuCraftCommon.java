@@ -24,6 +24,7 @@ public class MushokuCraftCommon {
         // Register Registries
         ModBlocks.register();
         com.mushokucraft.init.ModBlockEntities.register();
+        com.mushokucraft.init.ModMenuTypes.register();
         ModEntities.register();
         ModItems.register();
         ModCreativeTabs.register();

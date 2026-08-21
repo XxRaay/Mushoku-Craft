@@ -204,6 +204,7 @@ public class SpellWheelScreen extends Screen {
             this.buildSlots();
         }
 
+        boolean selectedSomething = false;
         if (this.hoveredSubSlot != -1 && this.activeCategorySlot != -1) {
             WheelSlot catSlot = this.slots.get(this.activeCategorySlot);
             if (this.hoveredSubSlot < catSlot.subSlots.size()) {
@@ -214,13 +215,19 @@ public class SpellWheelScreen extends Screen {
                     } else {
                         ClientSpellState.selectedSpell = sub.spellId;
                     }
+                    selectedSomething = true;
                 }
             }
         } else if (this.hoveredMainSlot != -1) {
             WheelSlot mSlot = this.slots.get(this.hoveredMainSlot);
             if (!mSlot.isCategory && mSlot.isUnlocked && mSlot.action != null) {
                 mSlot.action.run();
+                selectedSomething = true;
             }
+        }
+        // If nothing was selected, clear the current spell
+        if (!selectedSomething) {
+            ClientSpellState.selectedSpell = null;
         }
         if (this.minecraft != null) {
             this.minecraft.setScreen(null);

@@ -76,6 +76,7 @@ public class ModGameEvents {
                 
                 if (syncNeeded) {
                     ModGameEvents.syncMana(player2, data);
+                    ModGameEvents.syncMastery(player2, data);
                 }
             }
         });

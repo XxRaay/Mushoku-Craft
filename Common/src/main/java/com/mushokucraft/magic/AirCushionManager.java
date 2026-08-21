@@ -21,6 +21,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 public class AirCushionManager {
     private static final ResourceLocation AIR_CUSHION_SPEED_MOD_ID = ResourceLocation.fromNamespaceAndPath("mushokucraft", "air_cushion_speed");
+    private static final ResourceLocation AIR_CUSHION_SPELL_ID = ResourceLocation.fromNamespaceAndPath("mushokucraft", "air_cushion");
 
     public static void toggle(ServerPlayer player) {
         PlayerMasteryData mastery = PlayerMasteryProvider.get(player);
@@ -50,6 +51,7 @@ public class AirCushionManager {
 
         Level level = player.level();
         float mastery = data.getSchoolMastery(MagicSchool.WIND);
+        boolean syncNeeded = false;
         
         // Every second (20 ticks), consume mana and give mastery
         if (player.tickCount % 20 == 0) {
@@ -64,6 +66,8 @@ public class AirCushionManager {
             
             if (data.consumeMana(drain)) {
                 data.addSchoolMastery(MagicSchool.WIND, MushokuConfig.AIR_CUSHION_MASTERY_GAIN.get().floatValue());
+                data.addSpellMastery(AIR_CUSHION_SPELL_ID, 0.005f); // 0.5% spell mastery per second
+                syncNeeded = true;
             } else {
                 // Not enough mana
                 data.setAirCushionActive(false);
@@ -107,7 +111,7 @@ public class AirCushionManager {
             removeSpeedBoost(player);
         }
 
-        return false;
+        return syncNeeded;
     }
 
     private static void applySpeedBoost(ServerPlayer player, float mastery) {

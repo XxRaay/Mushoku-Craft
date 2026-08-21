@@ -67,7 +67,9 @@ public class LearningManager {
                     boolean bl = finalSuccess = cast.success && !cast.forceFizzle;
                     if (finalSuccess) {
                         PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
-                        mastery.addSpellMastery(cast.spellId, ((Double)MushokuConfig.LEARNING_MASTERY_GAIN.get()).floatValue());
+                        float masteryGain = cast.spellId.getPath().equals("air_cushion") ? 0.01f : ((Double)MushokuConfig.LEARNING_MASTERY_GAIN.get()).floatValue();
+                        mastery.addSpellMastery(cast.spellId, masteryGain);
+                        com.mushokucraft.event.ModGameEvents.syncMastery(player, mastery);
                         if (spell.getProjectileFactory() != null) {
                             Projectile projectile = spell.getProjectileFactory().create(player.level(), player);
                             Vec3 look = player.getLookAngle();
