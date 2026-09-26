@@ -145,10 +145,12 @@ public class LearningManager {
             return;
         }
         PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
-        if (!mastery.consumeMana(spell.getEffectiveManaCost(mastery))) {
+        float cost = spell.getEffectiveManaCost(mastery);
+        if (!mastery.consumeMana(cost)) {
             player.displayClientMessage((Component)Component.literal((String)"\u00a7cNot enough mana!"), true);
             return;
         }
+        ManaProgressionManager.applySpellManaGrowth(player, mastery, cost, spell);
         boolean success = true;
         int activeTicks = castDurationTicks = (int)spell.getBaseCastTimeTicks();
         ArrayList<Integer> qteTicks = new ArrayList<Integer>();

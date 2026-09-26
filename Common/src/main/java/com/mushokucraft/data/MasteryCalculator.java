@@ -58,6 +58,68 @@ public class MasteryCalculator {
         return 0f;
     }
 
+    // --- Mana Progression (Mushoku Tensei Anime System) ---
+
+    public static float calculateMaxManaGrowth(float manaSpent, com.mushokucraft.magic.SpellRank rank, float currentMana, float currentMaxMana) {
+        if (manaSpent <= 0f) {
+            return 0f;
+        }
+
+        double baseRate = MushokuConfig.MANA_GROWTH_RATE.get();
+        if (baseRate <= 0.0) {
+            return 0f;
+        }
+
+        // 1. Tier multiplier: higher rank spells stretch mana channels more effectively
+        float tierMultiplier = rank != null ? rank.getSchoolXpMultiplier() : 1.0f;
+
+        // 2. Exhaustion multiplier (Limit Break / Overexertion):
+        // In Mushoku Tensei, draining mana to near zero or completely emptying the pool
+        // causes mana veins to adapt and expand much faster.
+        float ratio = currentMaxMana > 0f ? (currentMana / currentMaxMana) : 1.0f;
+        double exhaustionMultiplier = 1.0;
+        double threshold = MushokuConfig.MANA_EXHAUSTION_THRESHOLD.get();
+        if (ratio <= threshold) {
+            double exhaustionFactor = (threshold - Math.max(0.0, ratio)) / Math.max(0.01, threshold);
+            exhaustionMultiplier = 1.0 + exhaustionFactor * (MushokuConfig.MANA_EXHAUSTION_BONUS_MULT.get() - 1.0);
+        }
+
+        // 3. Progressive soft-scaling curve (decay):
+        double decayFactor = 1.0;
+        if (MushokuConfig.ENABLE_MANA_GROWTH_DECAY.get()) {
+            double defaultMax = MushokuConfig.DEFAULT_MAX_MANA.get();
+            if (currentMaxMana > defaultMax) {
+                decayFactor = Math.pow(defaultMax / currentMaxMana, MushokuConfig.MANA_GROWTH_DECAY_POWER.get());
+                decayFactor = Math.max(MushokuConfig.MIN_MANA_GROWTH_FACTOR.get(), decayFactor);
+            }
+        }
+
+        float growth = (float) (manaSpent * baseRate * tierMultiplier * exhaustionMultiplier * decayFactor);
+
+        // 4. Upper Cap enforcement
+        double cap = MushokuConfig.MAX_MANA_CAP.get();
+        if (cap > 0.0 && currentMaxMana + growth > cap) {
+            growth = (float) Math.max(0.0, cap - currentMaxMana);
+        }
+
+        return Math.max(0f, growth);
+    }
+
+    public static float calculateManaRegenPerSecond(float baseRegenRatePerTick, float currentMaxMana) {
+        float baseRegenPerSec = baseRegenRatePerTick * 20.0f;
+        double defaultMax = MushokuConfig.DEFAULT_MAX_MANA.get();
+        double extraMaxMana = Math.max(0.0, currentMaxMana - defaultMax);
+
+        // Subtle increase from max mana, leaving accessories as the primary source of regen
+        double bonusFromMaxMana = extraMaxMana * MushokuConfig.MANA_REGEN_FROM_MAX_MANA_RATE.get();
+        double cap = MushokuConfig.MANA_REGEN_FROM_MAX_MANA_CAP.get();
+        if (cap > 0.0) {
+            bonusFromMaxMana = Math.min(cap, bonusFromMaxMana);
+        }
+
+        return baseRegenPerSec + (float) bonusFromMaxMana;
+    }
+
     // --- Sword Mastery Calculations (Touki) ---
 
     public static double calculateToukiDamage(float stanceMastery) {

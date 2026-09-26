@@ -76,6 +76,14 @@ public class ClientPayloadHandler {
 
     public static void handleSyncMana(SyncManaPacket packet) {
         ManaHudManager.ANIMATION_STATE.updateMana(packet.currentMana(), packet.maxMana());
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            PlayerMasteryData data = PlayerMasteryProvider.get(mc.player);
+            if (data != null) {
+                data.setMaxMana(packet.maxMana());
+                data.setMana(packet.currentMana());
+            }
+        }
     }
 
     public static void handleSyncFullMastery(com.mushokucraft.network.SyncFullMasteryPacket packet) {
@@ -84,6 +92,7 @@ public class ClientPayloadHandler {
             PlayerMasteryData data = PlayerMasteryProvider.get(mc.player);
             if (data != null) {
                 data.deserializeNBT(mc.player.level().registryAccess(), packet.data());
+                ManaHudManager.ANIMATION_STATE.updateMana(data.getMana(), data.getMaxMana());
             }
         }
     }

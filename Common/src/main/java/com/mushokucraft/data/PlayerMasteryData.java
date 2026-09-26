@@ -266,6 +266,18 @@ public class PlayerMasteryData
         }
     }
 
+    public void addMaxMana(float amount) {
+        if (amount <= 0.0f) {
+            return;
+        }
+        double cap = MushokuConfig.MAX_MANA_CAP.get();
+        if (cap > 0.0) {
+            this.maxMana = (float) Math.min(cap, this.maxMana + amount);
+        } else {
+            this.maxMana += amount;
+        }
+    }
+
     public void setManaRegenRate(float amount) {
         this.manaRegenRate = amount;
     }
@@ -339,9 +351,22 @@ public class PlayerMasteryData
     }
 
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
-        this.mana = tag.getFloat("Mana");
-        this.maxMana = tag.getFloat("MaxMana");
-        this.manaRegenRate = tag.getFloat("ManaRegenRate");
+        if (tag.contains("MaxMana")) {
+            this.maxMana = tag.getFloat("MaxMana");
+        }
+        if (this.maxMana <= 0.0f) {
+            this.maxMana = ((Double)MushokuConfig.DEFAULT_MAX_MANA.get()).floatValue();
+        }
+        if (tag.contains("Mana")) {
+            this.mana = tag.getFloat("Mana");
+        } else {
+            this.mana = this.maxMana;
+        }
+        if (tag.contains("ManaRegenRate")) {
+            this.manaRegenRate = tag.getFloat("ManaRegenRate");
+        } else {
+            this.manaRegenRate = ((Double)MushokuConfig.DEFAULT_MANA_REGEN_RATE.get()).floatValue();
+        }
         this.waterMastery = tag.getFloat("WaterMastery");
         this.fireMastery = tag.getFloat("FireMastery");
         this.earthMastery = tag.getFloat("EarthMastery");

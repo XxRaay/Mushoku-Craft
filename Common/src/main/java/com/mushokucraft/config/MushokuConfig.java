@@ -39,6 +39,22 @@ public class MushokuConfig {
     public static final ConfigValue<Double> DEFAULT_MAX_MANA = new ConfigValue<>(100.0);
     public static final ConfigValue<Double> DEFAULT_MANA_REGEN_RATE = new ConfigValue<>(0.05);
     public static final ConfigValue<Double> MANA_COST_REDUCTION_PER_MASTERY = new ConfigValue<>(0.3);
+
+    // Mana Progression & Capacity Growth (Mushoku Tensei Anime System)
+    public static final ConfigValue<Double> MANA_GROWTH_RATE = new ConfigValue<>(0.02);
+    public static final ConfigValue<Double> MANA_EXHAUSTION_THRESHOLD = new ConfigValue<>(0.25);
+    public static final ConfigValue<Double> MANA_EXHAUSTION_BONUS_MULT = new ConfigValue<>(2.0);
+    public static final ConfigValue<Boolean> ENABLE_MANA_GROWTH_DECAY = new ConfigValue<>(true);
+    public static final ConfigValue<Double> MANA_GROWTH_DECAY_POWER = new ConfigValue<>(0.5);
+    public static final ConfigValue<Double> MIN_MANA_GROWTH_FACTOR = new ConfigValue<>(0.1);
+    public static final ConfigValue<Double> MAX_MANA_CAP = new ConfigValue<>(50000.0);
+    public static final ConfigValue<Double> FIZZLE_MANA_GROWTH_MULT = new ConfigValue<>(0.5);
+    public static final ConfigValue<Boolean> ALLOW_SWORD_ARTS_MANA_GROWTH = new ConfigValue<>(false);
+    public static final ConfigValue<Double> MANA_REGEN_FROM_MAX_MANA_RATE = new ConfigValue<>(0.0002);
+    public static final ConfigValue<Double> MANA_REGEN_FROM_MAX_MANA_CAP = new ConfigValue<>(1.0);
+    public static final ConfigValue<Boolean> SHOW_MANA_GROWTH_NOTIFICATIONS = new ConfigValue<>(true);
+    public static final ConfigValue<Boolean> MANA_EXHAUSTION_EFFECTS = new ConfigValue<>(true);
+    public static final ConfigValue<Boolean> SLEEP_FULL_MANA_RESTORE = new ConfigValue<>(true);
     public static final ConfigValue<Double> SPELL_MASTERY_PER_CAST = new ConfigValue<>(0.025);
     public static final ConfigValue<Double> SCHOOL_MASTERY_PER_CAST = new ConfigValue<>(0.01);
     public static final ConfigValue<Double> LEARNING_SUCCESS_BASE_CHANCE = new ConfigValue<>(0.25);
@@ -138,11 +154,13 @@ public class MushokuConfig {
     // Magic Circle Sanctuary (Healing & Cleansing) Configs
     public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_1X1_MANA = new ConfigValue<>(250.0);
     public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_3X3_MANA = new ConfigValue<>(750.0);
-    public static final ConfigValue<Integer> MAGIC_CIRCLE_SANCTUARY_1X1_RADIUS = new ConfigValue<>(5);
-    public static final ConfigValue<Integer> MAGIC_CIRCLE_SANCTUARY_3X3_RADIUS = new ConfigValue<>(12);
-    public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_HEAL_PER_SEC = new ConfigValue<>(2.0);
-    public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_MANA_PER_HEAL = new ConfigValue<>(1.5);
-    public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_MANA_PER_CLEANSE = new ConfigValue<>(5.0);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_SANCTUARY_1X1_RADIUS = new ConfigValue<>(4);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_SANCTUARY_3X3_RADIUS = new ConfigValue<>(8);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_HEAL_PER_SEC = new ConfigValue<>(1.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_MANA_PER_HEAL = new ConfigValue<>(5.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_MANA_PER_CLEANSE = new ConfigValue<>(20.0);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_SANCTUARY_INTERVAL_TICKS = new ConfigValue<>(40);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_SANCTUARY_COMBAT_COOLDOWN_TICKS = new ConfigValue<>(60);
 
     // Magic Circle Overgrowth (Fertility & Farming) Configs
     public static final ConfigValue<Double> MAGIC_CIRCLE_OVERGROWTH_1X1_MANA = new ConfigValue<>(250.0);

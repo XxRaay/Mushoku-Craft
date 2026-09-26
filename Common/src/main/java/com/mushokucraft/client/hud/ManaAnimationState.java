@@ -54,7 +54,7 @@ public class ManaAnimationState {
     }
 
     public void updateMana(float current, float max) {
-        if (Math.abs(current - this.currentMana) > 0.01f) {
+        if (Math.abs(current - this.currentMana) > 0.01f || Math.abs(max - this.maxMana) > 0.01f) {
             this.previousMana = this.currentMana;
             this.manaChangedTicks = 60;
         }

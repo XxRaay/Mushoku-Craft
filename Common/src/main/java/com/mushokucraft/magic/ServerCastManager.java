@@ -55,7 +55,9 @@ public class ServerCastManager {
                 }
                 if (cast.forceFizzle || cast.fizzleTick > 0 && cast.totalTicks - cast.remainingTicks >= cast.fizzleTick) {
                     data = (PlayerMasteryData)PlayerMasteryProvider.get(player);
-                    data.consumeMana(cast.spell.getEffectiveManaCost(data));
+                    float fizzleCost = cast.spell.getEffectiveManaCost(data);
+                    data.consumeMana(fizzleCost);
+                    ManaProgressionManager.applySpellManaGrowth(player, data, fizzleCost * MushokuConfig.FIZZLE_MANA_GROWTH_MULT.get().floatValue(), cast.spell);
                     NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new SyncManaPacket(data.getMana(), data.getMaxMana()));
                     player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
                     iterator.remove();
@@ -63,12 +65,14 @@ public class ServerCastManager {
                 }
                 if (cast.remainingTicks > 0) continue;
                 data = (PlayerMasteryData)PlayerMasteryProvider.get(player);
-                if (data.consumeMana(cast.spell.getEffectiveManaCost(data))) {
+                float manaCost = cast.spell.getEffectiveManaCost(data);
+                if (data.consumeMana(manaCost)) {
                     if (cast.spell.getSpellAction() != null) {
                         cast.spell.getSpellAction().execute(player.level(), player, cast.spell);
                     }
                     data.addSpellMastery(cast.spell.getId(), ((Double)MushokuConfig.SPELL_MASTERY_PER_CAST.get()).floatValue());
                     data.addSchoolMastery(cast.spell.getSchool(), ((Double)MushokuConfig.SCHOOL_MASTERY_PER_CAST.get()).floatValue());
+                    ManaProgressionManager.applySpellManaGrowth(player, data, manaCost, cast.spell);
                     ModGameEvents.syncMana(player, data);
                     ModGameEvents.syncMastery(player, data);
                 }

@@ -26,7 +26,12 @@ import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.event.EventResult;
 
+import com.mushokucraft.data.MasteryCalculator;
+import com.mushokucraft.magic.ManaProgressionManager;
+
 public class ModGameEvents {
+    private static final java.util.Set<java.util.UUID> sleepingPlayers = new java.util.HashSet<>();
+
     public static void register() {
         PlayerEvent.PLAYER_JOIN.register(player -> {
             if (player instanceof ServerPlayer) {
@@ -46,12 +51,35 @@ public class ModGameEvents {
             }
         });
 
+        PlayerEvent.PLAYER_QUIT.register(player -> {
+            sleepingPlayers.remove(player.getUUID());
+        });
+
         TickEvent.PLAYER_POST.register(player -> {
             if (player instanceof ServerPlayer) {
                 ItemStack offhand;
                 ServerPlayer player2 = (ServerPlayer)player;
                 PlayerMasteryData data = (PlayerMasteryData)PlayerMasteryProvider.get(player2);
-                if (data != null && data.getActiveStance() == SwordStyle.SWORD_GOD && player2.getMainHandItem().getItem() instanceof SwordItem && !(offhand = player2.getOffhandItem()).isEmpty()) {
+                if (data == null) {
+                    return;
+                }
+
+                // Check sleep status for anime daily training full mana recovery
+                boolean wasSleeping = sleepingPlayers.contains(player2.getUUID());
+                boolean isSleeping = player2.isSleeping();
+                if (isSleeping) {
+                    sleepingPlayers.add(player2.getUUID());
+                    if (player2.getSleepTimer() >= 100) {
+                        ManaProgressionManager.handleSleepRestoration(player2, data);
+                    }
+                } else if (wasSleeping) {
+                    sleepingPlayers.remove(player2.getUUID());
+                    if (player2.level().isDay() || player2.getSleepTimer() >= 100) {
+                        ManaProgressionManager.handleSleepRestoration(player2, data);
+                    }
+                }
+
+                if (data.getActiveStance() == SwordStyle.SWORD_GOD && player2.getMainHandItem().getItem() instanceof SwordItem && !(offhand = player2.getOffhandItem()).isEmpty()) {
                     ItemStack toReturn = offhand.copy();
                     player2.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
                     if (!player2.getInventory().add(toReturn)) {
@@ -69,7 +97,8 @@ public class ModGameEvents {
                         syncNeeded = true;
                     }
                     if (data.getMana() < data.getMaxMana() && data.getManaRegenRate() > 0.0f) {
-                        data.regenMana(data.getManaRegenRate() * 20.0f);
+                        float effectiveRegenPerSec = MasteryCalculator.calculateManaRegenPerSecond(data.getManaRegenRate(), data.getMaxMana());
+                        data.regenMana(effectiveRegenPerSec);
                         syncNeeded = true;
                     }
                 }

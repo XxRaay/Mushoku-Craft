@@ -93,6 +93,7 @@ public class ServerChargeManager {
                     if (chargeData.ticks < (Integer)MushokuConfig.CHARGE_MAX_TICKS.get() || isChanneled) {
                         PlayerMasteryData data = (PlayerMasteryData)PlayerMasteryProvider.get(player2);
                     if (data.consumeMana(chargeData.maxManaDrainPerTick)) {
+                        chargeData.totalManaSpent += chargeData.maxManaDrainPerTick;
                         ++chargeData.ticks;
                         float progress = (float)chargeData.ticks / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue();
                         float newScale = ((Double)MushokuConfig.CHARGE_MIN_SCALE.get()).floatValue() + progress * (((Double)MushokuConfig.CHARGE_MAX_SCALE.get()).floatValue() - ((Double)MushokuConfig.CHARGE_MIN_SCALE.get()).floatValue());
@@ -161,7 +162,8 @@ public class ServerChargeManager {
         if (chargingPlayers.containsKey(player.getUUID())) {
             return;
         }
-        if (!data.consumeMana(spell.getEffectiveManaCost(data))) {
+        float initialCost = spell.getEffectiveManaCost(data);
+        if (!data.consumeMana(initialCost)) {
             player.displayClientMessage(Component.translatable("message.mushokucraft.not_enough_mana"), true);
             return;
         }
@@ -174,7 +176,9 @@ public class ServerChargeManager {
         if (magicProjectile != null) {
             player.level().addFreshEntity((Entity)magicProjectile);
             float maxManaDrainPerTick = ((Double)MushokuConfig.CHARGE_TOTAL_MANA_DRAIN.get()).floatValue() / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue();
-            chargingPlayers.put(player.getUUID(), new ChargeData(spellId, magicProjectile, maxManaDrainPerTick));
+            ChargeData chargeData = new ChargeData(spellId, magicProjectile, maxManaDrainPerTick);
+            chargeData.totalManaSpent = initialCost;
+            chargingPlayers.put(player.getUUID(), chargeData);
             ModGameEvents.syncMana(player, data);
         }
     }
@@ -260,6 +264,7 @@ public class ServerChargeManager {
             }
             data.addSpellMastery(spell.getId(), ((Double)MushokuConfig.SPELL_MASTERY_PER_CAST.get()).floatValue());
             data.addSchoolMastery(spell.getSchool(), ((Double)MushokuConfig.SCHOOL_MASTERY_PER_CAST.get()).floatValue());
+            ManaProgressionManager.applySpellManaGrowth(player, data, manaCost, spell);
             ModGameEvents.syncMana(player, data);
             ModGameEvents.syncMastery(player, data);
         }
@@ -317,6 +322,7 @@ public class ServerChargeManager {
             if (spell != null) {
                 data.addSpellMastery(chargeData.spellId, ((Double)MushokuConfig.SPELL_MASTERY_PER_CAST.get()).floatValue() + (float)chargeData.ticks / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue() * ((Double)MushokuConfig.CHARGE_MASTERY_BONUS_SPELL.get()).floatValue());
                 data.addSchoolMastery(spell.getSchool(), ((Double)MushokuConfig.SCHOOL_MASTERY_PER_CAST.get()).floatValue() + (float)chargeData.ticks / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue() * ((Double)MushokuConfig.CHARGE_MASTERY_BONUS_SCHOOL.get()).floatValue());
+                ManaProgressionManager.applySpellManaGrowth(player, data, chargeData.totalManaSpent, spell);
                 ModGameEvents.syncMastery(player, data);
             }
         }
@@ -362,6 +368,7 @@ public class ServerChargeManager {
         final Projectile entity;
         final float maxManaDrainPerTick;
         int ticks = 0;
+        float totalManaSpent = 0.0f;
 
         ChargeData(ResourceLocation spellId, Projectile entity, float maxManaDrainPerTick) {
             this.spellId = spellId;

@@ -93,8 +93,9 @@ public class SanctuaryCircleType implements MagicCircleType {
                     1, 0.25, 0.05, 0.25, 0.01);
         }
 
-        // Triage interval: every 20 ticks (1 second)
-        if (level.getGameTime() % 20 != 0) return;
+        // Triage interval: configurable (default 40 ticks = 2 seconds)
+        int interval = Math.max(1, MushokuConfig.MAGIC_CIRCLE_SANCTUARY_INTERVAL_TICKS.get());
+        if (level.getGameTime() % interval != 0) return;
 
         int radius = getRadius(be);
         AABB box = new AABB(pos).inflate(radius, 4.0, radius);
@@ -103,13 +104,29 @@ public class SanctuaryCircleType implements MagicCircleType {
 
         if (targets.isEmpty()) return;
 
+        // Sort targets: prioritize players first, then lowest health percentage
+        targets.sort((a, b) -> {
+            boolean aIsPlayer = a instanceof Player;
+            boolean bIsPlayer = b instanceof Player;
+            if (aIsPlayer != bIsPlayer) return aIsPlayer ? -1 : 1;
+            float aPct = a.getHealth() / Math.max(1.0f, a.getMaxHealth());
+            float bPct = b.getHealth() / Math.max(1.0f, b.getMaxHealth());
+            return Float.compare(aPct, bPct);
+        });
+
         float manaPerCleanse = MushokuConfig.MAGIC_CIRCLE_SANCTUARY_MANA_PER_CLEANSE.get().floatValue();
         float manaPerHeal = MushokuConfig.MAGIC_CIRCLE_SANCTUARY_MANA_PER_HEAL.get().floatValue();
         float healRate = MushokuConfig.MAGIC_CIRCLE_SANCTUARY_HEAL_PER_SEC.get().floatValue();
+        int combatCd = MushokuConfig.MAGIC_CIRCLE_SANCTUARY_COMBAT_COOLDOWN_TICKS.get();
+        int maxHealsThisPulse = (be.getSize() == 3) ? 4 : 2;
+        int healedCount = 0;
         boolean playedSound = false;
 
         for (LivingEntity target : targets) {
             if (be.getCurrentMana() <= 0.0f) break;
+            if (healedCount >= maxHealsThisPulse) break;
+
+            boolean helped = false;
 
             // 1. Cleansing harmful status effects (poison, wither, blindness, bleeding, etc.)
             List<MobEffectInstance> harmful = new ArrayList<>();
@@ -126,16 +143,24 @@ public class SanctuaryCircleType implements MagicCircleType {
                     be.setChanged();
 
                     level.sendParticles(ParticleTypes.WAX_OFF, target.getX(), target.getY() + 1.0, target.getZ(),
-                            10, 0.35, 0.5, 0.35, 0.05);
+                            8, 0.35, 0.5, 0.35, 0.05);
                     if (!playedSound) {
                         level.playSound(null, target.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 0.3f, 1.8f);
                         playedSound = true;
                     }
+                    helped = true;
                 }
             }
 
-            // 2. Health regeneration
-            if (be.getCurrentMana() >= manaPerHeal && target.getHealth() < target.getMaxHealth()) {
+            // 2. Health regeneration with Combat Cooldown
+            // If the entity recently took damage from a mob or active attack, sanctuary cannot stabilize healing
+            boolean inCombat = combatCd > 0 && (target.hurtTime > 0 || (target.tickCount - target.getLastHurtByMobTimestamp() < combatCd));
+
+            if (inCombat && target.getHealth() < target.getMaxHealth()) {
+                // Visual feedback: holy aura disrupted by battle trauma
+                level.sendParticles(ParticleTypes.SMOKE, target.getX(), target.getY() + target.getBbHeight() * 0.7, target.getZ(),
+                        2, 0.2, 0.1, 0.2, 0.01);
+            } else if (!inCombat && be.getCurrentMana() >= manaPerHeal && target.getHealth() < target.getMaxHealth()) {
                 float missingHp = target.getMaxHealth() - target.getHealth();
                 float healAmount = Math.min(healRate, missingHp);
                 float cost = healAmount * manaPerHeal;
@@ -148,13 +173,18 @@ public class SanctuaryCircleType implements MagicCircleType {
                     level.sendParticles(ParticleTypes.HEART, target.getX(), target.getY() + target.getBbHeight() + 0.2, target.getZ(),
                             1, 0.3, 0.2, 0.3, 0.02);
                     level.sendParticles(ParticleTypes.HAPPY_VILLAGER, target.getX(), target.getY() + 0.5, target.getZ(),
-                            4, 0.3, 0.3, 0.3, 0.02);
+                            3, 0.25, 0.25, 0.25, 0.02);
 
                     if (!playedSound) {
                         level.playSound(null, target.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 0.5f, 1.6f);
                         playedSound = true;
                     }
+                    helped = true;
                 }
+            }
+
+            if (helped) {
+                healedCount++;
             }
         }
     }

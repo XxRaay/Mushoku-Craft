@@ -67,6 +67,7 @@ public class AirCushionManager {
             if (data.consumeMana(drain)) {
                 data.addSchoolMastery(MagicSchool.WIND, MushokuConfig.AIR_CUSHION_MASTERY_GAIN.get().floatValue());
                 data.addSpellMastery(AIR_CUSHION_SPELL_ID, 0.005f); // 0.5% spell mastery per second
+                ManaProgressionManager.applySpellManaGrowth(player, data, drain, com.mushokucraft.init.ModSpells.AIR_CUSHION);
                 syncNeeded = true;
             } else {
                 // Not enough mana

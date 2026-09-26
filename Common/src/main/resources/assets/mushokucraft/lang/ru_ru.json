@@ -18,6 +18,9 @@
   "message.mushokucraft.requires_max_mastery": "Требуется 100% мастерства!",
   "message.mushokucraft.not_enough_mana_scroll": "Недостаточно маны для прочтения свитка!",
   "message.mushokucraft.unlocked_silence": "Вы изучили технику Длинный меч безмолвия!",
+  "message.mushokucraft.max_mana_increased": "§b✦ Запас маны расширен: §f%d §7→ §a%d§b!",
+  "message.mushokucraft.mana_exhaustion": "§c⚠ Запас маны исчерпан! Магические каналы напрягаются и расширяются...",
+  "message.mushokucraft.mana_restored_sleep": "§a✧ Вы проснулись отдохнувшим. Запас маны полностью восстановлен!",
   
   "command.mushokucraft.mana.set.success": "Мана %s установлена на %s",
   "command.mushokucraft.mana.max.success": "Максимальная мана %s установлена на %s",
