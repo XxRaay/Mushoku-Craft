@@ -40,11 +40,16 @@ public class IcicleEntity extends AbstractMagicProjectileEntity {
     }
 
     @Override
+    public com.mushokucraft.magic.MagicSchool getMagicSchool() {
+        return com.mushokucraft.magic.MagicSchool.WATER;
+    }
+
+    @Override
     protected void onHitEntity(EntityHitResult pResult) {
         super.onHitEntity(pResult);
         if (!this.level().isClientSide) {
             if (pResult.getEntity() instanceof LivingEntity target) {
-                float damage = MushokuConfig.ICICLE_BREAK_ICICLE_DAMAGE.get().floatValue();
+                float damage = com.mushokucraft.accessory.AccessoryHelper.applyMagicDamageBonus(this.getOwner(), this.getMagicSchool(), MushokuConfig.ICICLE_BREAK_ICICLE_DAMAGE.get().floatValue());
                 net.minecraft.world.damagesource.DamageSource source = new net.minecraft.world.damagesource.DamageSource(
                     this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE).getHolderOrThrow(com.mushokucraft.init.ModDamageTypes.MAGIC),
                     this, this.getOwner()

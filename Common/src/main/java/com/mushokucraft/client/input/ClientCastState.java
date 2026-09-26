@@ -29,10 +29,12 @@ public class ClientCastState {
     public static boolean isLearningCast = false;
 
     public static void startCast(ResourceLocation spellId, int castTime, int fizzle, boolean isLearning) {
+        Minecraft mc = Minecraft.getInstance();
+        boolean immune = mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player);
         isCasting = true;
         currentSpell = spellId;
         totalTicks = castTime;
-        fizzleTick = fizzle;
+        fizzleTick = immune ? -1 : fizzle;
         elapsedTicks = 0;
         hasFizzled = false;
         fadeOutTimer = 0;
@@ -51,12 +53,18 @@ public class ClientCastState {
 
     public static void endQte(boolean success) {
         isQteActive = false;
-        if (!success) {
+        Minecraft mc = Minecraft.getInstance();
+        boolean immune = mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player);
+        if (!success && !immune) {
             ClientCastState.triggerFizzle();
         }
     }
 
     public static void triggerFizzle() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player)) {
+            return;
+        }
         if (fizzleTick <= 0) {
             fizzleTick = elapsedTicks;
         }
@@ -75,8 +83,10 @@ public class ClientCastState {
         if (isCasting) {
             if (isQteActive) {
                 if ((qteShrinkingCircleScale -= 0.15f * qteSpeedModifier) <= 0.0f) {
-                    ClientCastState.endQte(false);
-                    NetworkManager.sendToServer((CustomPacketPayload)new QteResultPacket(0, isLearningCast));
+                    Minecraft mc = Minecraft.getInstance();
+                    boolean immune = mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player);
+                    ClientCastState.endQte(immune);
+                    NetworkManager.sendToServer((CustomPacketPayload)new QteResultPacket(immune ? 1 : 0, isLearningCast));
                 }
                 return;
             }

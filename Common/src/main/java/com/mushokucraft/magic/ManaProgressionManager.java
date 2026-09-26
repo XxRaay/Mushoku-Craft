@@ -105,8 +105,9 @@ public class ManaProgressionManager {
             return;
         }
 
-        if (data.getMana() < data.getMaxMana()) {
-            data.fullRestore();
+        float effectiveMax = data.getMaxMana() + com.mushokucraft.accessory.AccessoryHelper.getMaxManaBonus(player);
+        if (data.getMana() < effectiveMax) {
+            data.fullRestore(effectiveMax);
             ModGameEvents.syncMana(player, data);
 
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(),

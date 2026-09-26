@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "mushokucraft:pyromancer_spark_charm",
+    "mushokucraft:zephyr_feather_charm",
+    "mushokucraft:terra_buckler_charm",
+    "mushokucraft:chronos_pocket_watch",
+    "mushokucraft:eye_of_laplace"
+  ]
+}

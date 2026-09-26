@@ -40,6 +40,11 @@ public class FireballEntity extends AbstractMagicProjectileEntity {
     }
 
     @Override
+    public com.mushokucraft.magic.MagicSchool getMagicSchool() {
+        return com.mushokucraft.magic.MagicSchool.FIRE;
+    }
+
+    @Override
     protected void onHitEntity(EntityHitResult pResult) {
         super.onHitEntity(pResult);
         if (!this.level().isClientSide) {
@@ -49,7 +54,8 @@ public class FireballEntity extends AbstractMagicProjectileEntity {
                     this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE).getHolderOrThrow(com.mushokucraft.init.ModDamageTypes.MAGIC),
                     this, this.getOwner()
                 );
-                target.hurt(source, 3.0F * scale);
+                float damage = com.mushokucraft.accessory.AccessoryHelper.applyMagicDamageBonus(this.getOwner(), this.getMagicSchool(), 3.0F * scale);
+                target.hurt(source, damage);
                 target.igniteForSeconds((int)(5 * scale)); // Ignite target
             }
             if (scale > 2.0f) {

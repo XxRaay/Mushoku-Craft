@@ -17,9 +17,11 @@ import com.mushokucraft.network.QteTriggerPacket;
 import com.mushokucraft.network.SyncManaPacket;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -52,6 +54,11 @@ public class ClientPayloadHandler {
     }
 
     public static void handleQteTrigger(QteTriggerPacket packet) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player)) {
+            NetworkManager.sendToServer((CustomPacketPayload)new com.mushokucraft.network.QteResultPacket(1, ClientCastState.isLearningCast));
+            return;
+        }
         ClientCastState.startQte(packet.keyLetter(), packet.speedModifier(), packet.targetSizeModifier(), packet.perfectMultiplier());
     }
 
@@ -92,7 +99,12 @@ public class ClientPayloadHandler {
             PlayerMasteryData data = PlayerMasteryProvider.get(mc.player);
             if (data != null) {
                 data.deserializeNBT(mc.player.level().registryAccess(), packet.data());
-                ManaHudManager.ANIMATION_STATE.updateMana(data.getMana(), data.getMaxMana());
+                float effectiveMax = data.getMaxMana() + com.mushokucraft.accessory.AccessoryHelper.getMaxManaBonus(mc.player);
+                data.setMaxMana(effectiveMax);
+                if (data.getMana() > effectiveMax) {
+                    data.setMana(effectiveMax);
+                }
+                ManaHudManager.ANIMATION_STATE.updateMana(data.getMana(), effectiveMax);
             }
         }
     }

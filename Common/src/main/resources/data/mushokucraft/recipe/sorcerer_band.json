@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:gold_ingot"
+    },
+    {
+      "item": "minecraft:lapis_block"
+    },
+    {
+      "item": "mushokucraft:medium_mana_crystal"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "mushokucraft:sorcerer_band"
+  }
+}

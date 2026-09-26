@@ -52,6 +52,10 @@ allprojects {
             name = "KosmX's maven"
             url = "https://maven.kosmx.dev/"
         }
+        maven {
+            name = "Curios"
+            url = "https://maven.theillusivec4.top/"
+        }
     }
 
     tasks.withType(JavaCompile) {

@@ -55,7 +55,8 @@ public class WaterballEntity extends AbstractMagicProjectileEntity {
                     target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.LEVITATION, 10, 0, false, false));
                     
                     if (this.trappedTicks % 10 == 0) {
-                        target.hurt(this.damageSources().drown(), 2.0F);
+                        float damage = com.mushokucraft.accessory.AccessoryHelper.applyMagicDamageBonus(this.getOwner(), this.getMagicSchool(), 2.0F);
+                        target.hurt(this.damageSources().drown(), damage);
                     }
                     
                     target.setAirSupply(Math.max(-20, target.getAirSupply() - 2));
@@ -123,11 +124,17 @@ public class WaterballEntity extends AbstractMagicProjectileEntity {
                         this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE).getHolderOrThrow(com.mushokucraft.init.ModDamageTypes.MAGIC),
                         this, this.getOwner()
                     );
-                    target.hurt(source, 2.5F * scale);
+                    float damage = com.mushokucraft.accessory.AccessoryHelper.applyMagicDamageBonus(this.getOwner(), this.getMagicSchool(), 2.5F * scale);
+                    target.hurt(source, damage);
                 }
             }
             this.discard();
         }
+    }
+
+    @Override
+    public com.mushokucraft.magic.MagicSchool getMagicSchool() {
+        return com.mushokucraft.magic.MagicSchool.WATER;
     }
 
     @Override

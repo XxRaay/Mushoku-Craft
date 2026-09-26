@@ -45,16 +45,22 @@ public class AirStrikeEntity extends AbstractMagicProjectileEntity {
     }
 
     @Override
+    public com.mushokucraft.magic.MagicSchool getMagicSchool() {
+        return com.mushokucraft.magic.MagicSchool.WIND;
+    }
+
+    @Override
     protected void onHitEntity(EntityHitResult pResult) {
         super.onHitEntity(pResult);
         if (!this.level().isClientSide) {
             float scale = this.getChargeScale();
             if (pResult.getEntity() instanceof LivingEntity target) {
-                // No damage, just knockback scaled by charge
-                double knockbackStrength = 1.5D * scale;
+                // Knockback scaled by charge and wind magic bonus
+                double mult = com.mushokucraft.accessory.AccessoryHelper.getSchoolDamageMultiplier(this.getOwner(), this.getMagicSchool());
+                double knockbackStrength = 1.5D * scale * mult;
                 Vec3 vec3 = this.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D).normalize().scale(knockbackStrength);
                 if (vec3.lengthSqr() > 0.0D) {
-                    target.push(vec3.x, 0.5D * scale, vec3.z);
+                    target.push(vec3.x, 0.5D * scale * mult, vec3.z);
                 }
             }
             this.discard();

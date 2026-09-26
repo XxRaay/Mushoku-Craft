@@ -616,6 +616,10 @@ public class InscribedManuscriptItem extends Item {
             tooltipComponents.add(Component.translatable("tooltip.mushokucraft.captured_hint").withStyle(ChatFormatting.AQUA));
         }
 
+        if (com.mushokucraft.magic.circle.MagicCreationCircleType.ID.equals(circleTypeId)) {
+            tooltipComponents.add(Component.translatable("tooltip.mushokucraft.creation_hint").withStyle(ChatFormatting.AQUA));
+        }
+
         tooltipComponents.add(Component.translatable("item.mushokucraft.inscribed_manuscript.help1").withStyle(ChatFormatting.DARK_PURPLE));
         if (isTeleportType(circleTypeId)) {
             tooltipComponents.add(Component.translatable("item.mushokucraft.inscribed_manuscript.help2").withStyle(ChatFormatting.DARK_PURPLE));

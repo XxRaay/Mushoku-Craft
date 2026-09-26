@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:blaze_rod"
+    },
+    {
+      "item": "minecraft:gold_ingot"
+    },
+    {
+      "item": "mushokucraft:medium_mana_crystal"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "mushokucraft:inferno_ring"
+  }
+}

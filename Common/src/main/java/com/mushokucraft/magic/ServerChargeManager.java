@@ -139,17 +139,21 @@ public class ServerChargeManager {
                 player.displayClientMessage(Component.translatable("message.mushokucraft.not_enough_mana"), true);
                 return;
             }
+            float castReduction = com.mushokucraft.accessory.AccessoryHelper.getCastTimeReduction(player);
+            boolean immune = com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(player);
             float castTimeTicks = spell.getCastTime(spellMastery);
-            float fizzleChance = spell.getFizzleChance(spellMastery, data);
-            int iCastTime = (int)castTimeTicks;
+            int effectiveCastTime = Math.max(5, (int)(castTimeTicks * (1.0f - castReduction)));
             int fizzleTick = -1;
-            if (iCastTime > 0) {
-                if (player.getRandom().nextFloat() < fizzleChance) {
-                    float fizzlePoint = 0.2f + player.getRandom().nextFloat() * 0.7f;
-                    fizzleTick = (int)((float)iCastTime * fizzlePoint);
+            if (effectiveCastTime > 0) {
+                if (!immune) {
+                    float fizzleChance = spell.getFizzleChance(spellMastery, data);
+                    if (player.getRandom().nextFloat() < fizzleChance) {
+                        float fizzlePoint = 0.2f + player.getRandom().nextFloat() * 0.7f;
+                        fizzleTick = (int)((float)effectiveCastTime * fizzlePoint);
+                    }
                 }
-                ServerCastManager.startCast(player, spell, iCastTime, fizzleTick);
-                NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new CastStartedPacket(spell.getId(), iCastTime, fizzleTick));
+                ServerCastManager.startCast(player, spell, effectiveCastTime, fizzleTick);
+                NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new CastStartedPacket(spell.getId(), effectiveCastTime, fizzleTick));
             } else if (spellId.getPath().equals("longsword_light")) {
                 ServerChargeManager.handleLongswordLight(player, data, manaCost);
             } else if (spellId.getPath().equals("longsword_of_silence")) {

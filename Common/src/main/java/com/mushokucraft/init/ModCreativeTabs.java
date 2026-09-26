@@ -76,6 +76,53 @@ public class ModCreativeTabs {
                 }
             }).build());
 
+    public static final Supplier<CreativeModeTab> ACCESSORIES_TAB = TABS.register("accessories_tab", () -> CreativeModeTab.builder(CreativeModeTab.Row.TOP, 2)
+            .title(Component.translatable("itemGroup.mushokucraft.accessories"))
+            .icon(() -> ModItems.EYE_OF_LAPLACE.get().getDefaultInstance())
+            .displayItems((params, output) -> {
+                // Tier 1 Accessories
+                output.accept(ModItems.APPRENTICE_RING.get());
+                output.accept(ModItems.MANA_COPPER_RING.get());
+                output.accept(ModItems.MANA_SILVER_RING.get());
+                output.accept(ModItems.PYROMANCER_SPARK_CHARM.get());
+                output.accept(ModItems.AQUAMANCER_DROP_PENDANT.get());
+                output.accept(ModItems.ZEPHYR_FEATHER_CHARM.get());
+                output.accept(ModItems.GEOMANCER_STONE_RING.get());
+                output.accept(ModItems.SWORDSMAN_LEATHER_BELT.get());
+
+                // Tier 2 Accessories
+                output.accept(ModItems.MAGE_KNIGHT_AMULET.get());
+                output.accept(ModItems.SORCERER_BAND.get());
+                output.accept(ModItems.INFERNO_RING.get());
+                output.accept(ModItems.FROST_NECKLACE.get());
+                output.accept(ModItems.TEMPEST_SASH.get());
+                output.accept(ModItems.TERRA_BUCKLER_CHARM.get());
+                output.accept(ModItems.DUELIST_RING.get());
+                output.accept(ModItems.VITALITY_MANA_RING.get());
+
+                // Tier 3 Unique Mythic Curios (Forged on Magic Creation Circle)
+                output.accept(ModItems.EYE_OF_LAPLACE.get());
+                output.accept(ModItems.ARCHMAGE_HEART.get());
+                output.accept(ModItems.SWORD_GOD_BELT.get());
+                output.accept(ModItems.RING_OF_ETERNAL_TEMPEST.get());
+                output.accept(ModItems.VOLCANIC_SOVEREIGN_AMULET.get());
+                output.accept(ModItems.TITAN_GEOMANCER_BRACELET.get());
+                output.accept(ModItems.CHRONOS_POCKET_WATCH.get());
+                output.accept(ModItems.CELESTIAL_MANA_CORE.get());
+
+                // Ritual catalysts and Magic Creation blueprints
+                output.accept(ModItems.SMALL_MANA_CRYSTAL.get());
+                output.accept(ModItems.MEDIUM_MANA_CRYSTAL.get());
+                output.accept(ModItems.LARGE_MANA_CRYSTAL.get());
+                output.accept(AncientManuscriptItem.createForType(com.mushokucraft.magic.circle.MagicCreationCircleType.ID));
+                MagicCirclePattern creationPattern = ClientMagicCircleState.getPatternForType(com.mushokucraft.magic.circle.MagicCreationCircleType.ID);
+                if (creationPattern == null) {
+                    creationPattern = MagicCirclePatterns.getPatternForSeed(0L, com.mushokucraft.magic.circle.MagicCreationCircleType.ID);
+                }
+                output.accept(InscribedManuscriptItem.create(creationPattern, com.mushokucraft.magic.circle.MagicCreationCircleType.ID, 1));
+                output.accept(InscribedManuscriptItem.create(creationPattern, com.mushokucraft.magic.circle.MagicCreationCircleType.ID, 3));
+            }).build());
+
     public static void register() {
         TABS.register();
     }

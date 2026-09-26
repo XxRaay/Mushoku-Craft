@@ -38,9 +38,16 @@ public class ServerCastManager {
                     iterator.remove();
                     continue;
                 }
+                boolean immune = com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(player);
+                if (immune) {
+                    cast.forceFizzle = false;
+                    cast.fizzleTick = -1;
+                    cast.qteTriggerTicks.clear();
+                    cast.isQteWaiting = false;
+                }
                 if (cast.isQteWaiting) continue;
                 --cast.remainingTicks;
-                if (!cast.qteTriggerTicks.isEmpty() && cast.remainingTicks <= cast.qteTriggerTicks.get(cast.qteTriggerTicks.size() - 1)) {
+                if (!immune && !cast.qteTriggerTicks.isEmpty() && cast.remainingTicks <= cast.qteTriggerTicks.get(cast.qteTriggerTicks.size() - 1)) {
                     cast.qteTriggerTicks.remove(cast.qteTriggerTicks.size() - 1);
                     cast.isQteWaiting = true;
                     String letters = "abcdefghijklmnopqrstuvwxyz";
@@ -53,19 +60,23 @@ public class ServerCastManager {
                     NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new QteTriggerPacket(randomKey, speedModifier, targetSizeModifier, perfectMultiplier));
                     continue;
                 }
-                if (cast.forceFizzle || cast.fizzleTick > 0 && cast.totalTicks - cast.remainingTicks >= cast.fizzleTick) {
+                if (!immune && (cast.forceFizzle || cast.fizzleTick > 0 && cast.totalTicks - cast.remainingTicks >= cast.fizzleTick)) {
                     data = (PlayerMasteryData)PlayerMasteryProvider.get(player);
-                    float fizzleCost = cast.spell.getEffectiveManaCost(data);
+                    float baseCost = cast.spell.getEffectiveManaCost(data);
+                    float discount = com.mushokucraft.accessory.AccessoryHelper.getManaCostDiscount(player);
+                    float fizzleCost = Math.max(0.0f, baseCost * (1.0f - discount));
                     data.consumeMana(fizzleCost);
                     ManaProgressionManager.applySpellManaGrowth(player, data, fizzleCost * MushokuConfig.FIZZLE_MANA_GROWTH_MULT.get().floatValue(), cast.spell);
-                    NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new SyncManaPacket(data.getMana(), data.getMaxMana()));
+                    ModGameEvents.syncMana(player, data);
                     player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
                     iterator.remove();
                     continue;
                 }
                 if (cast.remainingTicks > 0) continue;
                 data = (PlayerMasteryData)PlayerMasteryProvider.get(player);
-                float manaCost = cast.spell.getEffectiveManaCost(data);
+                float baseCost = cast.spell.getEffectiveManaCost(data);
+                float discount = com.mushokucraft.accessory.AccessoryHelper.getManaCostDiscount(player);
+                float manaCost = Math.max(0.0f, baseCost * (1.0f - discount));
                 if (data.consumeMana(manaCost)) {
                     if (cast.spell.getSpellAction() != null) {
                         cast.spell.getSpellAction().execute(player.level(), player, cast.spell);
@@ -87,7 +98,12 @@ public class ServerCastManager {
     }
 
     public static void startCast(ServerPlayer player, Spell spell, int castTime, int fizzleTick) {
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, castTime + 10, 1, false, false, true));
+        float castReduction = com.mushokucraft.accessory.AccessoryHelper.getCastTimeReduction(player);
+        boolean immune = com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(player);
+        int effectiveCastTime = Math.max(5, (int)(castTime * (1.0f - castReduction)));
+        int effectiveFizzleTick = (!immune && fizzleTick > 0) ? Math.max(2, (int)(fizzleTick * (1.0f - castReduction))) : -1;
+
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, effectiveCastTime + 10, 1, false, false, true));
         
         if (spell.getId().getPath().equals("icicle_break")) {
             net.minecraft.world.phys.Vec3 eyePos = player.getEyePosition();
@@ -102,22 +118,25 @@ public class ServerCastManager {
         PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
         float spellMastery = mastery.getSpellMastery(spell.getId());
         ArrayList<Integer> qteTicks = new ArrayList<Integer>();
-        if (fizzleTick > 0) {
-            qteTicks.add(castTime - fizzleTick);
+        if (!immune && effectiveFizzleTick > 0) {
+            qteTicks.add(effectiveCastTime - effectiveFizzleTick);
         }
-        ActiveCast cast = new ActiveCast(player, spell, castTime, fizzleTick, qteTicks);
+        ActiveCast cast = new ActiveCast(player, spell, effectiveCastTime, effectiveFizzleTick, qteTicks);
         activeCasts.put(player.getUUID(), cast);
-        float schoolMastery = mastery.getSchoolMastery(spell.getSchool());
-        double successChance = MasteryCalculator.calculateSpellSuccessChance(spellMastery, schoolMastery);
-        successChance = Math.max(0.0, successChance - MasteryCalculator.calculateTierPenalty(spell, mastery));
-        ServerCastManager.scheduleNextFizzle(cast, successChance);
+        if (!immune) {
+            float schoolMastery = mastery.getSchoolMastery(spell.getSchool());
+            double successChance = MasteryCalculator.calculateSpellSuccessChance(spellMastery, schoolMastery);
+            successChance = Math.max(0.0, successChance - MasteryCalculator.calculateTierPenalty(spell, mastery));
+            ServerCastManager.scheduleNextFizzle(cast, successChance);
+        }
     }
 
     public static void handleQteResult(ServerPlayer player, int result) {
         ActiveCast cast = activeCasts.get(player.getUUID());
         if (cast != null && cast.isQteWaiting) {
             cast.isQteWaiting = false;
-            if (result == 0) {
+            boolean immune = com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(player);
+            if (result == 0 && !immune) {
                 cast.remainingTicks = cast.totalTicks - cast.fizzleTick;
                 if (cast.fizzleTick <= 0) {
                     cast.remainingTicks = 0;
@@ -127,15 +146,23 @@ public class ServerCastManager {
                 if (result == 2) {
                     cast.remainingTicks = Math.max(0, cast.remainingTicks - (Integer)MushokuConfig.QTE_PERFECT_TIME_BONUS_TICKS.get());
                 }
-                PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
-                float spellMastery = mastery.getSpellMastery(cast.spell.getId());
-                double successChance = 1.0 - (double)cast.spell.getFizzleChance(spellMastery, mastery);
-                ServerCastManager.scheduleNextFizzle(cast, successChance);
+                if (!immune) {
+                    PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
+                    float spellMastery = mastery.getSpellMastery(cast.spell.getId());
+                    double successChance = 1.0 - (double)cast.spell.getFizzleChance(spellMastery, mastery);
+                    ServerCastManager.scheduleNextFizzle(cast, successChance);
+                }
             }
         }
     }
 
     private static void scheduleNextFizzle(ActiveCast cast, double successChance) {
+        if (com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(cast.player)) {
+            cast.fizzleTick = -1;
+            cast.forceFizzle = false;
+            return;
+        }
+
         boolean success = Math.random() < successChance;
         if (!success && cast.remainingTicks > 5) {
             int ticksFromNow;

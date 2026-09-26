@@ -37,15 +37,20 @@ public class WaterSliceEntity extends AbstractMagicProjectileEntity {
     }
 
     @Override
+    public com.mushokucraft.magic.MagicSchool getMagicSchool() {
+        return com.mushokucraft.magic.MagicSchool.WATER;
+    }
+
+    @Override
     protected void onHitEntity(EntityHitResult pResult) {
         super.onHitEntity(pResult);
         if (!this.level().isClientSide) {
             float charge = this.getChargeScale();
             float widthScale = 1.0f + (charge - 1.0f) * MushokuConfig.WATER_SLICE_CHARGE_WIDTH_MULT.get().floatValue();
             
-            // Damage scaling: base + charge multiplier
+            // Damage scaling: base + charge multiplier + accessory bonus
             float baseDamage = MushokuConfig.WATER_SLICE_BASE_DAMAGE.get().floatValue();
-            float finalDamage = baseDamage * charge;
+            float finalDamage = com.mushokucraft.accessory.AccessoryHelper.applyMagicDamageBonus(this.getOwner(), this.getMagicSchool(), baseDamage * charge);
             
             if (pResult.getEntity() instanceof LivingEntity target) {
                 net.minecraft.world.damagesource.DamageSource source = new net.minecraft.world.damagesource.DamageSource(

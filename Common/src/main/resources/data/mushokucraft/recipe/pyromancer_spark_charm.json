@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:blaze_powder"
+    },
+    {
+      "item": "minecraft:string"
+    },
+    {
+      "item": "mushokucraft:small_mana_crystal"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "mushokucraft:pyromancer_spark_charm"
+  }
+}

@@ -9,6 +9,7 @@ import com.mushokucraft.item.InscribedManuscriptItem;
 import com.mushokucraft.magic.circle.MagicCircleRegistry;
 import com.mushokucraft.magic.circle.MagicCircleType;
 import net.minecraft.resources.ResourceLocation;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -750,6 +751,29 @@ public class MagicCircleBlock extends BaseEntityBlock {
                                 radius), true);
                     } else {
                         player.displayClientMessage(Component.translatable("message.mushokucraft.overgrowth_empty"), true);
+                    }
+                } else if (com.mushokucraft.magic.circle.MagicCreationCircleType.ID.equals(circleBE.getCircleTypeId())) {
+                    List<ItemEntity> items = com.mushokucraft.magic.circle.MagicCreationCircleType.findItems(level, centerPos, circleBE.getSize());
+                    com.mushokucraft.magic.circle.CreationCircleRecipe recipe = com.mushokucraft.magic.circle.CreationCircleRecipes.findRecipe(items, circleBE.getSize());
+                    if (recipe != null) {
+                        float req = required > 0.0f ? required : type.calculateRequiredMana(level, centerPos, null);
+                        int pct = (int) ((currentMana / Math.max(1.0f, req)) * 100);
+                        player.displayClientMessage(Component.translatable("message.mushokucraft.creation_status",
+                                recipe.getDisplayName(),
+                                String.format("%.0f", currentMana),
+                                String.format("%.0f", req),
+                                pct), true);
+                    } else if (items.isEmpty()) {
+                        player.displayClientMessage(Component.translatable("message.mushokucraft.creation_waiting_ingredients"), true);
+                    } else {
+                        com.mushokucraft.magic.circle.CreationCircleRecipe closest = com.mushokucraft.magic.circle.CreationCircleRecipes.findClosestRecipe(items);
+                        if (closest != null) {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.creation_missing_ingredients",
+                                    closest.getDisplayName(),
+                                    com.mushokucraft.magic.circle.CreationCircleRecipes.getMissingIngredientsDescription(closest, items)), true);
+                        } else {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.creation_requires_ingredients"), true);
+                        }
                     }
                 } else {
                     float req = required;

@@ -38,10 +38,17 @@ public class LearningManager {
             UUID uuid;
             ActiveLearning cast;
             if (player2 instanceof ServerPlayer && (cast = learningTasks.get(uuid = (player = (ServerPlayer)player2).getUUID())) != null) {
+                boolean immune = com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(player);
+                if (immune) {
+                    cast.forceFizzle = false;
+                    cast.fizzleTick = -1;
+                    cast.qteTriggerTicks.clear();
+                    cast.isQteWaiting = false;
+                }
                 if (cast.isQteWaiting) {
                     return;
                 }
-                if (!cast.qteTriggerTicks.isEmpty() && cast.remainingTicks <= cast.qteTriggerTicks.get(cast.qteTriggerTicks.size() - 1)) {
+                if (!immune && !cast.qteTriggerTicks.isEmpty() && cast.remainingTicks <= cast.qteTriggerTicks.get(cast.qteTriggerTicks.size() - 1)) {
                     cast.qteTriggerTicks.remove(cast.qteTriggerTicks.size() - 1);
                     cast.isQteWaiting = true;
                     String letters = "abcdefghijklmnopqrstuvwxyz";
@@ -56,7 +63,7 @@ public class LearningManager {
                     return;
                 }
                 --cast.remainingTicks;
-                if (cast.forceFizzle || cast.remainingTicks <= 0) {
+                if ((!immune && cast.forceFizzle) || cast.remainingTicks <= 0) {
                     boolean finalSuccess;
                     learningTasks.remove(uuid);
                     player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
@@ -64,7 +71,7 @@ public class LearningManager {
                     if (spell == null) {
                         return;
                     }
-                    boolean bl = finalSuccess = cast.success && !cast.forceFizzle;
+                    finalSuccess = cast.success && (immune || !cast.forceFizzle);
                     if (finalSuccess) {
                         PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
                         float masteryGain = cast.spellId.getPath().equals("air_cushion") ? 0.01f : ((Double)MushokuConfig.LEARNING_MASTERY_GAIN.get()).floatValue();
@@ -91,7 +98,8 @@ public class LearningManager {
         ActiveLearning cast = learningTasks.get(player.getUUID());
         if (cast != null && cast.isQteWaiting) {
             cast.isQteWaiting = false;
-            if (result == 0) {
+            boolean immune = com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(player);
+            if (result == 0 && !immune) {
                 cast.remainingTicks = cast.totalTicks - cast.fizzleTick;
                 if (cast.fizzleTick <= 0) {
                     cast.remainingTicks = 0;
@@ -101,6 +109,7 @@ public class LearningManager {
                 if (result == 2) {
                     cast.remainingTicks = Math.max(0, cast.remainingTicks - (Integer)MushokuConfig.QTE_PERFECT_TIME_BONUS_TICKS.get());
                 }
+                if (!immune) {
                     PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
                     Spell spell = ModSpells.SPELLS.get(cast.spellId);
                     if (!cast.spellId.getPath().equals("air_cushion")) {
@@ -108,11 +117,18 @@ public class LearningManager {
                         double successChance = Math.max(0.0, MushokuConfig.LEARNING_SUCCESS_BASE_CHANCE.get() - tierPenalty);
                         LearningManager.scheduleNextFizzle(cast, successChance);
                     }
+                }
             }
         }
     }
 
     private static void scheduleNextFizzle(ActiveLearning cast, double successChance) {
+        if (cast.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(cast.player)) {
+            cast.fizzleTick = -1;
+            cast.forceFizzle = false;
+            return;
+        }
+
         boolean success = Math.random() < successChance;
         if (!success && cast.remainingTicks > 5) {
             int ticksFromNow;
@@ -152,26 +168,31 @@ public class LearningManager {
         }
         ManaProgressionManager.applySpellManaGrowth(player, mastery, cost, spell);
         boolean success = true;
-        int activeTicks = castDurationTicks = (int)spell.getBaseCastTimeTicks();
+        boolean immune = com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(player);
+        float castReduction = com.mushokucraft.accessory.AccessoryHelper.getCastTimeReduction(player);
+        int activeTicks = castDurationTicks = Math.max(5, (int)(spell.getBaseCastTimeTicks() * (1.0f - castReduction)));
         ArrayList<Integer> qteTicks = new ArrayList<Integer>();
-        ActiveLearning castTask = new ActiveLearning(spellId, success, activeTicks, 0, qteTicks);
+        ActiveLearning castTask = new ActiveLearning(player, spellId, success, activeTicks, -1, qteTicks);
         learningTasks.put(player.getUUID(), castTask);
-        if (spellId.getPath().equals("air_cushion")) {
-            qteTicks.add(16);
-            qteTicks.add(32);
-            qteTicks.add(48);
-            qteTicks.add(64);
-            castTask.fizzleTick = 64;
-        } else {
-            float tierPenalty = MasteryCalculator.calculateTierPenalty(spell, mastery);
-            double successChance = Math.max(0.0, MushokuConfig.LEARNING_SUCCESS_BASE_CHANCE.get() - tierPenalty);
-            LearningManager.scheduleNextFizzle(castTask, successChance);
+        if (!immune) {
+            if (spellId.getPath().equals("air_cushion")) {
+                qteTicks.add(16);
+                qteTicks.add(32);
+                qteTicks.add(48);
+                qteTicks.add(64);
+                castTask.fizzleTick = 64;
+            } else {
+                float tierPenalty = MasteryCalculator.calculateTierPenalty(spell, mastery);
+                double successChance = Math.max(0.0, MushokuConfig.LEARNING_SUCCESS_BASE_CHANCE.get() - tierPenalty);
+                LearningManager.scheduleNextFizzle(castTask, successChance);
+            }
         }
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, activeTicks + 10, 1, false, false, true));
-        NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new LearnSpellSyncPacket(spellId, 0));
+        NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new LearnSpellSyncPacket(spellId, immune ? -1 : castTask.fizzleTick));
     }
 
     private static class ActiveLearning {
+        final ServerPlayer player;
         final ResourceLocation spellId;
         final boolean success;
         final int totalTicks;
@@ -181,7 +202,8 @@ public class LearningManager {
         boolean isQteWaiting = false;
         boolean forceFizzle = false;
 
-        ActiveLearning(ResourceLocation spellId, boolean success, int totalTicks, int fizzleTick, List<Integer> qteTriggerTicks) {
+        ActiveLearning(ServerPlayer player, ResourceLocation spellId, boolean success, int totalTicks, int fizzleTick, List<Integer> qteTriggerTicks) {
+            this.player = player;
             this.spellId = spellId;
             this.success = success;
             this.totalTicks = totalTicks;

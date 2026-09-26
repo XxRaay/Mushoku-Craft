@@ -95,11 +95,19 @@ public class PlayerMasteryData
     }
 
     public void regenMana(float amount) {
-        this.mana = Math.min(this.mana + amount, this.maxMana);
+        this.regenMana(amount, this.maxMana);
+    }
+
+    public void regenMana(float amount, float maxLimit) {
+        this.mana = Math.min(this.mana + amount, maxLimit);
     }
 
     public void fullRestore() {
         this.mana = this.maxMana;
+    }
+
+    public void fullRestore(float maxLimit) {
+        this.mana = maxLimit;
     }
 
     public float getSchoolMastery(MagicSchool school) {
@@ -255,15 +263,26 @@ public class PlayerMasteryData
         ++this.shieldBlocks;
     }
 
+    private transient float lastSyncedEffectiveMax = -1.0f;
+
+    public float getLastSyncedEffectiveMax() {
+        return this.lastSyncedEffectiveMax;
+    }
+
+    public void setLastSyncedEffectiveMax(float value) {
+        this.lastSyncedEffectiveMax = value;
+    }
+
     public void setMana(float amount) {
-        this.mana = Math.min(amount, this.maxMana);
+        this.mana = Math.max(0.0f, amount);
+    }
+
+    public void setMana(float amount, float maxLimit) {
+        this.mana = Math.max(0.0f, Math.min(amount, maxLimit));
     }
 
     public void setMaxMana(float amount) {
         this.maxMana = amount;
-        if (this.mana > this.maxMana) {
-            this.mana = this.maxMana;
-        }
     }
 
     public void addMaxMana(float amount) {

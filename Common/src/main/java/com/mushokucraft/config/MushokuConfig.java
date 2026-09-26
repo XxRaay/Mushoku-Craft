@@ -175,4 +175,7 @@ public class MushokuConfig {
     // Magic Circle Soul Anchor (Reincarnation & Soul Recall) Configs
     public static final ConfigValue<Double> MAGIC_CIRCLE_SOUL_ANCHOR_MANA = new ConfigValue<>(1000.0);
     public static final ConfigValue<Double> MAGIC_CIRCLE_SOUL_ANCHOR_RECALL_COST = new ConfigValue<>(800.0);
+
+    // Magic Circle Magic Creation (Ritual Transmutation) Configs
+    public static final ConfigValue<Double> MAGIC_CIRCLE_CREATION_MANA_MULT = new ConfigValue<>(1.0);
 }

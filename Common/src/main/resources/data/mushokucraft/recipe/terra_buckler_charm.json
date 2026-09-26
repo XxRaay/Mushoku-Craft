@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:obsidian"
+    },
+    {
+      "item": "minecraft:shield"
+    },
+    {
+      "item": "mushokucraft:medium_mana_crystal"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "mushokucraft:terra_buckler_charm"
+  }
+}

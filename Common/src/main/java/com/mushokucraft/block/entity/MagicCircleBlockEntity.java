@@ -14,11 +14,15 @@ import com.mushokucraft.magic.circle.DimensionalGateCircleType;
 import com.mushokucraft.magic.circle.MagicCirclePattern;
 import com.mushokucraft.magic.circle.MagicCircleRegistry;
 import com.mushokucraft.magic.circle.MagicCircleType;
+import com.mushokucraft.magic.circle.CreationCircleRecipe;
+import com.mushokucraft.magic.circle.CreationCircleRecipes;
+import com.mushokucraft.magic.circle.MagicCreationCircleType;
 import com.mushokucraft.magic.circle.OvergrowthCircleType;
 import com.mushokucraft.magic.circle.SanctuaryCircleType;
 import com.mushokucraft.magic.circle.SoulAnchorCircleType;
 import com.mushokucraft.magic.circle.SummoningCircleType;
 import com.mushokucraft.magic.circle.TeleportCircleType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
@@ -578,6 +582,21 @@ public class MagicCircleBlockEntity extends BlockEntity {
                 }
                 yield (r != null) ? r.manaCost() : 0.0f;
             }
+            case "magic_creation" -> {
+                if (level != null) {
+                    List<ItemEntity> items = MagicCreationCircleType.findItems(level, worldPosition, layerSize);
+                    CreationCircleRecipe recipe = CreationCircleRecipes.findRecipe(items, layerSize);
+                    if (recipe != null) {
+                        double mult = MushokuConfig.MAGIC_CIRCLE_CREATION_MANA_MULT.get();
+                        float mana = recipe.getRequiredMana();
+                        if (layerSize == 3) {
+                            mana *= 0.75f;
+                        }
+                        yield (float) (mana * mult);
+                    }
+                }
+                yield 0.0f;
+            }
             case "teleportation", "teleport" -> {
                 if (linkedPos != null) {
                     double dx = worldPosition.getX() - linkedPos.getX();
@@ -986,6 +1005,7 @@ public class MagicCircleBlockEntity extends BlockEntity {
         boolean hasTeleport = be.hasCircleType(TeleportCircleType.ID) && !isGate;
         boolean hasSummoning = be.hasCircleType(SummoningCircleType.ID);
         boolean hasCrystallization = be.hasCircleType(CrystallizationCircleType.ID);
+        boolean hasCreation = be.hasCircleType(MagicCreationCircleType.ID);
         boolean canInfuse = true;
         if (isGate || hasTeleport) {
             if (be.linkedPos == null) canInfuse = false;
@@ -994,6 +1014,9 @@ public class MagicCircleBlockEntity extends BlockEntity {
             canInfuse = false;
         }
         if (hasCrystallization && CrystallizationCircleType.findTargetItemEntity(level, pos, be.size) == null) {
+            canInfuse = false;
+        }
+        if (hasCreation && CreationCircleRecipes.findRecipe(MagicCreationCircleType.findItems(level, pos, be.size), be.size) == null) {
             canInfuse = false;
         }
 
@@ -1024,6 +1047,20 @@ public class MagicCircleBlockEntity extends BlockEntity {
                             player.displayClientMessage(Component.translatable("message.mushokucraft.summon_requires_mob"), true);
                         } else if (hasCrystallization && CrystallizationCircleType.findTargetItemEntity(level, pos, be.size) == null) {
                             player.displayClientMessage(Component.translatable("message.mushokucraft.crystallization_requires_mineral"), true);
+                        } else if (hasCreation) {
+                            List<ItemEntity> items = MagicCreationCircleType.findItems(level, pos, be.size);
+                            if (items.isEmpty()) {
+                                player.displayClientMessage(Component.translatable("message.mushokucraft.creation_waiting_ingredients"), true);
+                            } else {
+                                CreationCircleRecipe closest = CreationCircleRecipes.findClosestRecipe(items);
+                                if (closest != null) {
+                                    player.displayClientMessage(Component.translatable("message.mushokucraft.creation_missing_ingredients",
+                                            closest.getDisplayName(),
+                                            CreationCircleRecipes.getMissingIngredientsDescription(closest, items)), true);
+                                } else {
+                                    player.displayClientMessage(Component.translatable("message.mushokucraft.creation_requires_ingredients"), true);
+                                }
+                            }
                         }
                     }
                     continue;
@@ -1076,6 +1113,15 @@ public class MagicCircleBlockEntity extends BlockEntity {
                                         String.format("%.0f", be.currentMana),
                                         String.format("%.0f", be.barrierHealth),
                                         String.format("%.0f", be.barrierMaxHealth)), true);
+                            } else if (hasCreation) {
+                                CreationCircleRecipe recipe = CreationCircleRecipes.findRecipe(MagicCreationCircleType.findItems(level, pos, be.size), be.size);
+                                Component rName = recipe != null ? recipe.getDisplayName() : Component.literal("...");
+                                int pct = (int) ((be.currentMana / Math.max(1.0f, be.requiredMana)) * 100);
+                                player.displayClientMessage(Component.translatable("message.mushokucraft.creation_infusing",
+                                        rName,
+                                        String.format("%.0f", be.currentMana),
+                                        String.format("%.0f", be.requiredMana),
+                                        pct), true);
                             } else {
                                 int pct = (int) ((be.currentMana / Math.max(1.0f, be.requiredMana)) * 100);
                                 player.displayClientMessage(Component.translatable("message.mushokucraft.infusing_mana",

@@ -32,6 +32,9 @@ dependencies {
     // GeckoLib
     modImplementation "software.bernie.geckolib:geckolib-neoforge-${rootProject.minecraft_version}:${rootProject.geckolib_version}"
 
+    // Curios API
+    modImplementation "top.theillusivec4.curios:curios-neoforge:${rootProject.curios_version}"
+
     // Test Mods
     modImplementation files(
         "libs/bettercombat-neoforge-2.4.0+1.21.1.jar",

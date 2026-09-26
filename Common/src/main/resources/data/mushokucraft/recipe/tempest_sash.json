@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:phantom_membrane"
+    },
+    {
+      "item": "minecraft:leather"
+    },
+    {
+      "item": "mushokucraft:medium_mana_crystal"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "mushokucraft:tempest_sash"
+  }
+}

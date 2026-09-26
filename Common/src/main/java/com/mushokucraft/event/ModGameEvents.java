@@ -91,28 +91,74 @@ public class ModGameEvents {
                 if (com.mushokucraft.magic.AirCushionManager.tick(player2, data)) {
                     syncNeeded = true;
                 }
+
+                float effectiveMax = data.getMaxMana() + com.mushokucraft.accessory.AccessoryHelper.getMaxManaBonus(player2);
+                if (data.getLastSyncedEffectiveMax() != effectiveMax) {
+                    data.setLastSyncedEffectiveMax(effectiveMax);
+                    if (data.getMana() > effectiveMax) {
+                        data.setMana(effectiveMax);
+                    }
+                    syncNeeded = true;
+                } else if (data.getMana() > effectiveMax) {
+                    data.setMana(effectiveMax);
+                    syncNeeded = true;
+                }
                 
                 if (player2.tickCount % 20 == 0) {
                     if (ToukiManager.tick(player2, data)) {
                         syncNeeded = true;
                     }
-                    if (data.getMana() < data.getMaxMana() && data.getManaRegenRate() > 0.0f) {
-                        float effectiveRegenPerSec = MasteryCalculator.calculateManaRegenPerSecond(data.getManaRegenRate(), data.getMaxMana());
-                        data.regenMana(effectiveRegenPerSec);
+                    float regenBonus = com.mushokucraft.accessory.AccessoryHelper.getManaRegenBonus(player2);
+                    if (data.getMana() < effectiveMax && (data.getManaRegenRate() > 0.0f || regenBonus > 0.0f)) {
+                        float effectiveRegenPerSec = MasteryCalculator.calculateManaRegenPerSecond(data.getManaRegenRate(), data.getMaxMana()) + regenBonus;
+                        data.regenMana(effectiveRegenPerSec, effectiveMax);
                         syncNeeded = true;
                     }
                 }
                 
                 if (syncNeeded) {
                     ModGameEvents.syncMana(player2, data);
-                    ModGameEvents.syncMastery(player2, data);
                 }
             }
+        });
+
+        dev.architectury.event.events.common.EntityEvent.LIVING_HURT.register((entity, source, amount) -> {
+            if (entity.level().isClientSide) return EventResult.pass();
+
+            if (entity instanceof ServerPlayer player) {
+                // 1. Archmage's Heart Lifeline
+                if (com.mushokucraft.accessory.AccessoryHelper.hasLifeline(player) && player.getHealth() <= amount) {
+                    PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
+                    if (mastery != null && mastery.getMana() >= 500.0f) {
+                        mastery.consumeMana(500.0f);
+                        player.setHealth(Math.max(4.0f, player.getMaxHealth() * 0.3f));
+                        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.REGENERATION, 160, 1));
+                        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE, 400, 0));
+                        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 80, 2));
+                        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), net.minecraft.sounds.SoundEvents.TOTEM_USE, net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.0f);
+                        ((net.minecraft.server.level.ServerLevel)player.level()).sendParticles(net.minecraft.core.particles.ParticleTypes.TOTEM_OF_UNDYING, player.getX(), player.getY() + 1.0, player.getZ(), 35, 0.4, 0.5, 0.4, 0.2);
+                        player.displayClientMessage(Component.translatable("message.mushokucraft.lifeline_triggered"), true);
+                        ModGameEvents.syncMana(player, mastery);
+                        return EventResult.interruptFalse();
+                    }
+                }
+
+                // 2. Volcanic Sovereign Burn
+                if (com.mushokucraft.accessory.AccessoryHelper.hasVolcanicBurn(player)) {
+                    if (source.getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker && attacker != player) {
+                        attacker.igniteForSeconds(6);
+                        attacker.hurt(player.damageSources().inFire(), 3.0f);
+                    }
+                }
+            }
+
+            return EventResult.pass();
         });
     }
 
     public static void syncMana(ServerPlayer player, PlayerMasteryData data) {
-        NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new SyncManaPacket(data.getMana(), data.getMaxMana()));
+        float effectiveMax = data.getMaxMana() + com.mushokucraft.accessory.AccessoryHelper.getMaxManaBonus(player);
+        NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new SyncManaPacket(data.getMana(), effectiveMax));
     }
 
     public static void syncMastery(ServerPlayer player, PlayerMasteryData data) {

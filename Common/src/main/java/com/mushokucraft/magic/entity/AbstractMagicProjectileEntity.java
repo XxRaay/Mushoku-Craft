@@ -143,6 +143,10 @@ public abstract class AbstractMagicProjectileEntity extends ThrowableProjectile 
     }
 
     protected void onFlightTick(double d0, double d1, double d2, Vec3 vec3) {}
+
+    public com.mushokucraft.magic.MagicSchool getMagicSchool() {
+        return null;
+    }
 }
 
 

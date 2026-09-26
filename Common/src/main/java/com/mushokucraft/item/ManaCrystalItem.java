@@ -325,12 +325,13 @@ public class ManaCrystalItem extends Item {
         if (!level.isClientSide()) {
             PlayerMasteryData data = PlayerMasteryProvider.get(player);
             if (data != null) {
-                if (data.getMana() >= data.getMaxMana()) {
+                float effectiveMax = data.getMaxMana() + com.mushokucraft.accessory.AccessoryHelper.getMaxManaBonus(player);
+                if (data.getMana() >= effectiveMax) {
                     player.displayClientMessage(Component.translatable("message.mushokucraft.mana_already_full"), true);
                     return InteractionResultHolder.fail(stack);
                 }
 
-                data.regenMana(this.manaRestored);
+                data.regenMana(this.manaRestored, effectiveMax);
                 PlayerMasteryProvider.sync(player);
 
                 if (level instanceof ServerLevel sl) {
