@@ -23,7 +23,8 @@ public class MushokuCraftFabricClient implements ClientModInitializer {
         QteInputHandler.register();
         ModKeybindings.register();
 
-        // Register translucent render type for air cushion blocks
+        // Register translucent render type for air cushion and barrier blocks
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.AIR_CUSHION.get(), RenderType.translucent());
+        BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.BARRIER_WALL.get(), RenderType.translucent());
     }
 }

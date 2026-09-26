@@ -23,6 +23,16 @@ public class ModCreativeTabs {
         output.accept((ItemLike)ModItems.MAGE_MEAT.get());
         output.accept((ItemLike)ModItems.SABERTOOTH_LEATHER.get());
         output.accept((ItemLike)ModItems.MODULAR_ANVIL.get());
+        output.accept((ItemLike)ModItems.BLANK_CANVAS.get());
+        output.accept((ItemLike)ModItems.INSCRIBED_MANUSCRIPT.get());
+        // Ancient Manuscripts with specific circle blueprints
+        for (com.mushokucraft.magic.circle.MagicCircleType circleType : com.mushokucraft.magic.circle.MagicCircleRegistry.getAll()) {
+            output.accept(com.mushokucraft.item.AncientManuscriptItem.createForType(circleType.getId()));
+        }
+        output.accept((ItemLike)ModItems.MAGIC_CIRCLE.get());
+        output.accept((ItemLike)ModItems.SMALL_MANA_CRYSTAL.get());
+        output.accept((ItemLike)ModItems.MEDIUM_MANA_CRYSTAL.get());
+        output.accept((ItemLike)ModItems.LARGE_MANA_CRYSTAL.get());
     }).build());
 
     public static void register() {

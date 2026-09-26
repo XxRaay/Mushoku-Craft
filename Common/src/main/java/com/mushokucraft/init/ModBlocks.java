@@ -21,6 +21,20 @@ public class ModBlocks {
             new com.mushokucraft.block.ModularAnvilBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.ANVIL))
     );
 
+    public static final RegistrySupplier<Block> MAGIC_CIRCLE = BLOCKS.register("magic_circle", () ->
+            new com.mushokucraft.block.MagicCircleBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of()
+                    .noOcclusion()
+                    .noLootTable()
+                    .destroyTime(0.2f)
+            ));
+
+    public static final RegistrySupplier<Block> BARRIER_WALL = BLOCKS.register("barrier_wall", () ->
+            new com.mushokucraft.block.BarrierWallBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of()
+                    .noOcclusion()
+                    .noLootTable()
+                    .destroyTime(-1.0f)
+            ));
+
     public static void register() {
         BLOCKS.register();
     }

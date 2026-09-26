@@ -30,6 +30,7 @@ public class MushokuCraftCommon {
         ModCreativeTabs.register();
         ModEffects.register();
         ModLootModifiers.register();
+        com.mushokucraft.init.ModRecipeSerializers.register();
         
         // Register Networking
         ModNetworking.register();
@@ -51,6 +52,7 @@ public class MushokuCraftCommon {
         LearningManager.register();
         ServerCastManager.register();
         ServerChargeManager.register();
+        com.mushokucraft.magic.companion.SummonCompanionManager.init();
         
         LOGGER.info("Mushoku Craft Common initialized.");
     }

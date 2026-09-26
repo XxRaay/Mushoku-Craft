@@ -29,6 +29,15 @@ public class ModItems {
 
     public static final Supplier<Item> MODULAR_ANVIL = ITEMS.register("modular_anvil", () -> new net.minecraft.world.item.BlockItem(ModBlocks.MODULAR_ANVIL.get(), new Item.Properties()));
 
+    public static final Supplier<Item> BLANK_CANVAS = ITEMS.register("blank_canvas", () -> new com.mushokucraft.item.BlankCanvasItem(new Item.Properties().stacksTo(64)));
+    public static final Supplier<Item> INSCRIBED_MANUSCRIPT = ITEMS.register("inscribed_manuscript", () -> new com.mushokucraft.item.InscribedManuscriptItem(new Item.Properties().stacksTo(1)));
+    public static final Supplier<Item> ANCIENT_MANUSCRIPT = ITEMS.register("ancient_manuscript", () -> new com.mushokucraft.item.AncientManuscriptItem(new Item.Properties()));
+    public static final Supplier<Item> MAGIC_CIRCLE = ITEMS.register("magic_circle", () -> new net.minecraft.world.item.BlockItem(ModBlocks.MAGIC_CIRCLE.get(), new Item.Properties()));
+
+    public static final Supplier<Item> SMALL_MANA_CRYSTAL = ITEMS.register("small_mana_crystal", () -> new com.mushokucraft.item.ManaCrystalItem(new Item.Properties().stacksTo(16), 50.0f));
+    public static final Supplier<Item> MEDIUM_MANA_CRYSTAL = ITEMS.register("medium_mana_crystal", () -> new com.mushokucraft.item.ManaCrystalItem(new Item.Properties().stacksTo(16).rarity(Rarity.RARE), 150.0f));
+    public static final Supplier<Item> LARGE_MANA_CRYSTAL = ITEMS.register("large_mana_crystal", () -> new com.mushokucraft.item.ManaCrystalItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC), 400.0f));
+
     public static void register() {
         ITEMS.register();
     }

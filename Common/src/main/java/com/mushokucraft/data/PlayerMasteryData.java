@@ -34,6 +34,19 @@ public class PlayerMasteryData
     private boolean isAirCushionActive = false;
     private int shieldBlocks = 0;
     private final Map<ResourceLocation, Long> itemCooldownEnds = new HashMap<ResourceLocation, Long>();
+    private final java.util.Set<ResourceLocation> studiedCircles = new java.util.HashSet<ResourceLocation>();
+
+    public boolean isCircleStudied(ResourceLocation circleTypeId) {
+        return this.studiedCircles.contains(circleTypeId);
+    }
+
+    public boolean studyCircle(ResourceLocation circleTypeId) {
+        return this.studiedCircles.add(circleTypeId);
+    }
+
+    public java.util.Set<ResourceLocation> getStudiedCircles() {
+        return java.util.Collections.unmodifiableSet(this.studiedCircles);
+    }
 
     public PlayerMasteryData() {
         this.mana = ((Double)MushokuConfig.DEFAULT_MANA.get()).floatValue();
@@ -284,6 +297,13 @@ public class PlayerMasteryData
             cdTag.putLong(entry.getKey().toString(), entry.getValue().longValue());
         }
         tag.put("ItemCooldownEnds", (Tag)cdTag);
+
+        net.minecraft.nbt.ListTag circlesTag = new net.minecraft.nbt.ListTag();
+        for (ResourceLocation id : this.studiedCircles) {
+            circlesTag.add(net.minecraft.nbt.StringTag.valueOf(id.toString()));
+        }
+        tag.put("StudiedCircles", (Tag)circlesTag);
+
         return tag;
     }
 
@@ -328,6 +348,13 @@ public class PlayerMasteryData
             CompoundTag cdTag = tag.getCompound("ItemCooldownEnds");
             for (String key : cdTag.getAllKeys()) {
                 this.itemCooldownEnds.put(ResourceLocation.parse((String)key), cdTag.getLong(key));
+            }
+        }
+        this.studiedCircles.clear();
+        if (tag.contains("StudiedCircles", Tag.TAG_LIST)) {
+            net.minecraft.nbt.ListTag circlesTag = tag.getList("StudiedCircles", Tag.TAG_STRING);
+            for (int i = 0; i < circlesTag.size(); i++) {
+                this.studiedCircles.add(ResourceLocation.parse(circlesTag.getString(i)));
             }
         }
         this.isToukiActive = false;

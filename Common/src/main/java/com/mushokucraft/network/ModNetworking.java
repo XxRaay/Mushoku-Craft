@@ -79,5 +79,23 @@ public class ModNetworking {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, MasteryGainedPacket.TYPE, MasteryGainedPacket.STREAM_CODEC, (packet, context) -> {
             context.queue(() -> ClientPayloadHandler.handleMasteryGained(packet));
         });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, InscribeCanvasPacket.TYPE, InscribeCanvasPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handle(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, ConsumeCanvasInkPacket.TYPE, ConsumeCanvasInkPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handle(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, SaveCanvasDraftPacket.TYPE, SaveCanvasDraftPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handle(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncMagicCirclesPacket.TYPE, SyncMagicCirclesPacket.STREAM_CODEC, (packet, context) -> {
+            context.queue(() -> packet.handleClient());
+        });
     }
 }

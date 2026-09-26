@@ -107,4 +107,47 @@ public class MushokuConfig {
     public static final ConfigValue<Double> AIR_CUSHION_SPEED_MULT_MAX = new ConfigValue<>(1.3);
     public static final ConfigValue<Double> AIR_CUSHION_SPEED_MULT_BASE = new ConfigValue<>(1.0);
     public static final ConfigValue<Integer> AIR_CUSHION_BLOCK_LIFETIME = new ConfigValue<>(14); // 0.7s = 14 ticks
+
+    // Magic Circle Configs
+    public static final ConfigValue<Double> MAGIC_CIRCLE_TELEPORT_BASE_MANA = new ConfigValue<>(40.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_TELEPORT_MANA_PER_BLOCK = new ConfigValue<>(0.5);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_INFUSION_RATE_PER_TICK = new ConfigValue<>(2.5);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_INK_PIXELS_PER_SAC = new ConfigValue<>(12);
+
+    // Magic Circle Barrier Configs
+    public static final ConfigValue<Double> MAGIC_CIRCLE_BARRIER_1X1_MANA = new ConfigValue<>(250.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_BARRIER_3X3_MANA = new ConfigValue<>(750.0);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_BARRIER_1X1_RADIUS = new ConfigValue<>(5);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_BARRIER_3X3_RADIUS = new ConfigValue<>(10);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_BARRIER_1X1_HEIGHT = new ConfigValue<>(4);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_BARRIER_3X3_HEIGHT = new ConfigValue<>(6);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_BARRIER_1X1_MAX_HP = new ConfigValue<>(100.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_BARRIER_3X3_MAX_HP = new ConfigValue<>(350.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_BARRIER_1X1_UPKEEP = new ConfigValue<>(1.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_BARRIER_3X3_UPKEEP = new ConfigValue<>(4.0);
+
+    // Magic Circle Capture (Sealing) Configs
+    public static final ConfigValue<Double> MAGIC_CIRCLE_CAPTURE_BASE_MANA = new ConfigValue<>(300.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_CAPTURE_DAMAGE_RATE = new ConfigValue<>(4.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_CAPTURE_MANA_PER_DAMAGE = new ConfigValue<>(1.0);
+
+    // Magic Circle Summoning Configs
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SUMMON_BASE_MANA = new ConfigValue<>(50.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SUMMON_MANA_PER_HP = new ConfigValue<>(5.0);
+
+    // Magic Circle Sanctuary (Healing & Cleansing) Configs
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_1X1_MANA = new ConfigValue<>(250.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_3X3_MANA = new ConfigValue<>(750.0);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_SANCTUARY_1X1_RADIUS = new ConfigValue<>(5);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_SANCTUARY_3X3_RADIUS = new ConfigValue<>(12);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_HEAL_PER_SEC = new ConfigValue<>(2.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_MANA_PER_HEAL = new ConfigValue<>(1.5);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SANCTUARY_MANA_PER_CLEANSE = new ConfigValue<>(5.0);
+
+    // Magic Circle Overgrowth (Fertility & Farming) Configs
+    public static final ConfigValue<Double> MAGIC_CIRCLE_OVERGROWTH_1X1_MANA = new ConfigValue<>(250.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_OVERGROWTH_3X3_MANA = new ConfigValue<>(750.0);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_OVERGROWTH_1X1_RADIUS = new ConfigValue<>(6);
+    public static final ConfigValue<Integer> MAGIC_CIRCLE_OVERGROWTH_3X3_RADIUS = new ConfigValue<>(16);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_OVERGROWTH_MANA_PER_GROWTH = new ConfigValue<>(2.5);
 }

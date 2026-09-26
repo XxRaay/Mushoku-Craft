@@ -32,6 +32,7 @@ public class ModClientSetup {
     public static void register() {
         ClientLifecycleEvent.CLIENT_SETUP.register(mc -> {
             PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(ResourceLocation.fromNamespaceAndPath("mushokucraft", "animation"), 42, player -> new ModifierLayer<>());
+            dev.architectury.registry.client.rendering.BlockEntityRendererRegistry.register(com.mushokucraft.init.ModBlockEntities.MAGIC_CIRCLE_BE.get(), com.mushokucraft.client.render.block.MagicCircleBlockEntityRenderer::new);
         });
 
         ClientGuiEvent.RENDER_HUD.register((graphics, tickDelta) -> {
