@@ -150,4 +150,11 @@ public class MushokuConfig {
     public static final ConfigValue<Integer> MAGIC_CIRCLE_OVERGROWTH_1X1_RADIUS = new ConfigValue<>(6);
     public static final ConfigValue<Integer> MAGIC_CIRCLE_OVERGROWTH_3X3_RADIUS = new ConfigValue<>(16);
     public static final ConfigValue<Double> MAGIC_CIRCLE_OVERGROWTH_MANA_PER_GROWTH = new ConfigValue<>(2.5);
+
+    // Magic Circle Dimensional Gate (Interdimensional Transit) Configs
+    public static final ConfigValue<Double> MAGIC_CIRCLE_DIMENSIONAL_GATE_MANA = new ConfigValue<>(500.0);
+
+    // Magic Circle Soul Anchor (Reincarnation & Soul Recall) Configs
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SOUL_ANCHOR_MANA = new ConfigValue<>(1000.0);
+    public static final ConfigValue<Double> MAGIC_CIRCLE_SOUL_ANCHOR_RECALL_COST = new ConfigValue<>(800.0);
 }

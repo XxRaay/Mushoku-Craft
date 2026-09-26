@@ -53,6 +53,7 @@ public class MushokuCraftCommon {
         ServerCastManager.register();
         ServerChargeManager.register();
         com.mushokucraft.magic.companion.SummonCompanionManager.init();
+        com.mushokucraft.magic.circle.SoulRecallHandler.register();
         
         LOGGER.info("Mushoku Craft Common initialized.");
     }

@@ -23,7 +23,14 @@ public class MushokuCraftFabricClient implements ClientModInitializer {
         QteInputHandler.register();
         ModKeybindings.register();
 
-        // Register translucent render type for air cushion and barrier blocks
+        // Register magic circle block entity renderer on Fabric directly
+        net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
+                com.mushokucraft.init.ModBlockEntities.MAGIC_CIRCLE_BE.get(),
+                com.mushokucraft.client.render.block.MagicCircleBlockEntityRenderer::new
+        );
+
+        // Register render types for special blocks
+        BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.MAGIC_CIRCLE.get(), RenderType.cutout());
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.AIR_CUSHION.get(), RenderType.translucent());
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.BARRIER_WALL.get(), RenderType.translucent());
     }

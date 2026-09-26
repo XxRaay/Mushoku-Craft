@@ -35,6 +35,30 @@ public class PlayerMasteryData
     private int shieldBlocks = 0;
     private final Map<ResourceLocation, Long> itemCooldownEnds = new HashMap<ResourceLocation, Long>();
     private final java.util.Set<ResourceLocation> studiedCircles = new java.util.HashSet<ResourceLocation>();
+    private net.minecraft.core.BlockPos soulAnchorPos = null;
+    private ResourceLocation soulAnchorDim = null;
+
+    public boolean hasSoulAnchor() {
+        return this.soulAnchorPos != null && this.soulAnchorDim != null;
+    }
+
+    public net.minecraft.core.BlockPos getSoulAnchorPos() {
+        return this.soulAnchorPos;
+    }
+
+    public ResourceLocation getSoulAnchorDim() {
+        return this.soulAnchorDim;
+    }
+
+    public void setSoulAnchor(net.minecraft.core.BlockPos pos, ResourceLocation dim) {
+        this.soulAnchorPos = pos;
+        this.soulAnchorDim = dim;
+    }
+
+    public void clearSoulAnchor() {
+        this.soulAnchorPos = null;
+        this.soulAnchorDim = null;
+    }
 
     public boolean isCircleStudied(ResourceLocation circleTypeId) {
         return this.studiedCircles.contains(circleTypeId);
@@ -304,6 +328,13 @@ public class PlayerMasteryData
         }
         tag.put("StudiedCircles", (Tag)circlesTag);
 
+        if (this.soulAnchorPos != null && this.soulAnchorDim != null) {
+            tag.putInt("SoulAnchorX", this.soulAnchorPos.getX());
+            tag.putInt("SoulAnchorY", this.soulAnchorPos.getY());
+            tag.putInt("SoulAnchorZ", this.soulAnchorPos.getZ());
+            tag.putString("SoulAnchorDim", this.soulAnchorDim.toString());
+        }
+
         return tag;
     }
 
@@ -356,6 +387,16 @@ public class PlayerMasteryData
             for (int i = 0; i < circlesTag.size(); i++) {
                 this.studiedCircles.add(ResourceLocation.parse(circlesTag.getString(i)));
             }
+        }
+        if (tag.contains("SoulAnchorX") && tag.contains("SoulAnchorDim")) {
+            this.soulAnchorPos = new net.minecraft.core.BlockPos(
+                    tag.getInt("SoulAnchorX"),
+                    tag.getInt("SoulAnchorY"),
+                    tag.getInt("SoulAnchorZ"));
+            this.soulAnchorDim = ResourceLocation.parse(tag.getString("SoulAnchorDim"));
+        } else {
+            this.soulAnchorPos = null;
+            this.soulAnchorDim = null;
         }
         this.isToukiActive = false;
         this.isAirCushionActive = false;

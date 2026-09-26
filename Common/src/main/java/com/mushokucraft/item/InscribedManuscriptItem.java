@@ -4,15 +4,19 @@ import com.mushokucraft.block.entity.MagicCircleBlockEntity;
 import com.mushokucraft.init.ModBlocks;
 import com.mushokucraft.init.ModItems;
 import com.mushokucraft.magic.circle.MagicCirclePattern;
+import com.mushokucraft.magic.circle.MagicCirclePatterns;
 import com.mushokucraft.magic.circle.MagicCircleRegistry;
 import com.mushokucraft.magic.circle.MagicCircleType;
+import com.mushokucraft.magic.circle.TeleportCircleType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -34,6 +38,10 @@ public class InscribedManuscriptItem extends Item {
     }
 
     public static ItemStack create(MagicCirclePattern pattern, ResourceLocation circleTypeId) {
+        return create(pattern, circleTypeId, 1);
+    }
+
+    public static ItemStack create(MagicCirclePattern pattern, ResourceLocation circleTypeId, int size) {
         ItemStack stack = new ItemStack(ModItems.INSCRIBED_MANUSCRIPT.get());
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
             if (pattern != null) {
@@ -41,6 +49,9 @@ public class InscribedManuscriptItem extends Item {
             }
             if (circleTypeId != null) {
                 tag.putString("CircleType", circleTypeId.toString());
+            }
+            if (size > 1) {
+                tag.putInt("Size", size);
             }
         });
         return stack;
@@ -62,6 +73,30 @@ public class InscribedManuscriptItem extends Item {
             return ResourceLocation.tryParse(tag.getString("CircleType"));
         }
         return null;
+    }
+
+    public static ResourceLocation getOrIdentifyCircleTypeId(ItemStack stack, Level level) {
+        ResourceLocation id = getCircleTypeId(stack);
+        if (id == null && level != null) {
+            MagicCirclePattern pattern = getPattern(stack);
+            if (pattern != null && pattern.countFilled() > 0) {
+                MagicCircleType type = MagicCircleRegistry.identify(level, pattern);
+                if (type != null) {
+                    id = type.getId();
+                    ResourceLocation finalId = id;
+                    CustomData.update(DataComponents.CUSTOM_DATA, stack, cTag -> {
+                        cTag.putString("CircleType", finalId.toString());
+                    });
+                }
+            }
+        }
+        return id;
+    }
+
+    public static boolean isTeleportType(ResourceLocation id) {
+        if (id == null) return false;
+        return TeleportCircleType.ID.equals(id) ||
+                (id.getNamespace().equals("mushokucraft") && ("teleportation".equals(id.getPath()) || "teleport".equals(id.getPath())));
     }
 
     public static BlockPos getLinkedPos(ItemStack stack) {
@@ -181,7 +216,7 @@ public class InscribedManuscriptItem extends Item {
                 ResourceLocation targetType = targetBE.getCircleTypeId();
 
                 // A: Place captured mob into Summoning Circle
-                if (ResourceLocation.fromNamespaceAndPath("mushokucraft", "summoning").equals(targetType)) {
+                if (targetBE.hasCircleType(com.mushokucraft.magic.circle.SummoningCircleType.ID)) {
                     if (hasCapturedMob(stack)) {
                         if (targetBE.hasCapturedMob()) {
                             if (!level.isClientSide() && player != null) {
@@ -193,9 +228,7 @@ public class InscribedManuscriptItem extends Item {
                             targetBE.setCapturedMob(getCapturedEntityId(stack), getCapturedEntityTag(stack), getCapturedEntityName(stack), getCapturedEntityMaxHp(stack));
                             clearCapturedMob(stack);
                             targetBE.setCurrentMana(0.0f);
-                            if (targetBE.getCircleType() != null) {
-                                targetBE.setRequiredMana(targetBE.getCircleType().calculateRequiredMana(level, centerPos, null));
-                            }
+                            targetBE.setRequiredMana(targetBE.calculateTotalRequiredMana(level));
                             targetBE.setChanged();
                             level.sendBlockUpdated(centerPos, clickedState, clickedState, 3);
                             level.playSound(null, centerPos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0f, 1.4f);
@@ -208,11 +241,12 @@ public class InscribedManuscriptItem extends Item {
                 }
 
                 // B: Extract captured mob from Capture Circle into empty manuscript
-                if (ResourceLocation.fromNamespaceAndPath("mushokucraft", "capture").equals(targetType)) {
+                if (targetBE.hasCircleType(com.mushokucraft.magic.circle.CaptureCircleType.ID)) {
                     if (targetBE.hasCapturedMob() && !hasCapturedMob(stack)) {
                         if (!level.isClientSide()) {
                             setCapturedMob(stack, targetBE.getCapturedEntityId(), targetBE.getCapturedEntityTag(), targetBE.getCapturedEntityName(), targetBE.getCapturedEntityMaxHp());
                             targetBE.clearCapturedMob();
+                            targetBE.setRequiredMana(targetBE.calculateTotalRequiredMana(level));
                             targetBE.setChanged();
                             level.sendBlockUpdated(centerPos, clickedState, clickedState, 3);
                             level.playSound(null, centerPos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 1.0f, 1.2f);
@@ -224,29 +258,136 @@ public class InscribedManuscriptItem extends Item {
                     }
                 }
 
-                // C: Standard linking - ONLY ALLOWED FOR TELEPORT CIRCLES!
-                ResourceLocation teleportTypeId = ResourceLocation.fromNamespaceAndPath("mushokucraft", "teleport");
-                ResourceLocation myType = getCircleTypeId(stack);
+                // C: Multi-layer Attachment & Teleport Linking
+                ResourceLocation myType = getOrIdentifyCircleTypeId(stack, level);
 
-                if (!teleportTypeId.equals(targetType) || !teleportTypeId.equals(myType)) {
-                    if (!level.isClientSide() && player != null) {
-                        player.displayClientMessage(Component.translatable("message.mushokucraft.circle_cannot_be_linked"), true);
-                    }
-                    return InteractionResult.FAIL;
-                }
+                boolean isTeleportLinkAttempt = isTeleportType(targetType) && isTeleportType(myType) && (targetBE.getSize() < 3 || (player != null && !player.isShiftKeyDown()));
 
-                if (myType.equals(targetType)) {
+                if (isTeleportLinkAttempt) {
                     if (!level.isClientSide()) {
-                        setLinkedPos(stack, centerPos, level.dimension().location());
-                        level.playSound(null, centerPos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0f, 1.3f);
-                        if (player != null) {
-                            player.displayClientMessage(Component.translatable("message.mushokucraft.circle_linked_to_item", centerPos.getX(), centerPos.getY(), centerPos.getZ()), true);
+                        BlockPos linkedPos = getLinkedPos(stack);
+                        ResourceLocation linkedDim = getLinkedDim(stack);
+
+                        if (linkedPos != null && !linkedPos.equals(centerPos)) {
+                            targetBE.setLinked(linkedPos, linkedDim);
+                            targetBE.setChanged();
+                            level.sendBlockUpdated(centerPos, clickedState, clickedState, 3);
+
+                            if (linkedDim == null || linkedDim.equals(level.dimension().location())) {
+                                if (level.getBlockEntity(linkedPos) instanceof MagicCircleBlockEntity otherBE) {
+                                    otherBE.setLinked(centerPos, level.dimension().location());
+                                    otherBE.setChanged();
+                                    level.sendBlockUpdated(linkedPos, otherBE.getBlockState(), otherBE.getBlockState(), 3);
+                                }
+                            }
+
+                            setLinkedPos(stack, null, null);
+                            level.playSound(null, centerPos, SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 1.0f, 1.4f);
+                            level.playSound(null, centerPos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0f, 1.2f);
+                            if (level instanceof ServerLevel sl) {
+                                sl.sendParticles(ParticleTypes.PORTAL, centerPos.getX() + 0.5, centerPos.getY() + 0.2, centerPos.getZ() + 0.5, 40, 0.8, 0.1, 0.8, 0.5);
+                                sl.sendParticles(ParticleTypes.FLASH, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, 1, 0, 0, 0, 0);
+                            }
+                            if (player != null) {
+                                player.displayClientMessage(Component.translatable("message.mushokucraft.circles_linked_success"), true);
+                            }
+                        } else if (linkedPos != null && linkedPos.equals(centerPos)) {
+                            if (player != null) {
+                                player.displayClientMessage(Component.translatable("message.mushokucraft.circle_already_linked_to_this"), true);
+                            }
+                        } else {
+                            setLinkedPos(stack, centerPos, level.dimension().location());
+                            level.playSound(null, centerPos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0f, 1.3f);
+                            if (player != null) {
+                                player.displayClientMessage(Component.translatable("message.mushokucraft.circle_linked_to_item", centerPos.getX(), centerPos.getY(), centerPos.getZ()), true);
+                            }
                         }
                     }
                     return InteractionResult.sidedSuccess(level.isClientSide());
+                }
+
+                // Multi-layer attachment: only allowed on 3x3 circles!
+                if (targetBE.getSize() == 3) {
+                    boolean isBaseGate = com.mushokucraft.magic.circle.DimensionalGateCircleType.ID.equals(targetBE.getCircleTypeId());
+                    boolean isLayerGate = com.mushokucraft.magic.circle.DimensionalGateCircleType.ID.equals(myType);
+
+                    if (isBaseGate && !isLayerGate) {
+                        if (!level.isClientSide() && player != null) {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.dimensional_gate_only_self"), true);
+                        }
+                        return InteractionResult.FAIL;
+                    }
+                    if (!isBaseGate && isLayerGate) {
+                        if (!level.isClientSide() && player != null) {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.dimensional_gate_cannot_be_layer"), true);
+                        }
+                        return InteractionResult.FAIL;
+                    }
+
+                    boolean isBaseAnchor = com.mushokucraft.magic.circle.SoulAnchorCircleType.ID.equals(targetBE.getCircleTypeId());
+                    boolean isLayerAnchor = com.mushokucraft.magic.circle.SoulAnchorCircleType.ID.equals(myType);
+                    boolean isLayerSealing = com.mushokucraft.magic.circle.CaptureCircleType.ID.equals(myType);
+
+                    if (isBaseAnchor) {
+                        if (!isLayerAnchor && !isLayerSealing) {
+                            if (!level.isClientSide() && player != null) {
+                                player.displayClientMessage(Component.translatable("message.mushokucraft.soul_anchor_only_anchor_and_sealing"), true);
+                            }
+                            return InteractionResult.FAIL;
+                        }
+                        if (targetBE.hasLayerType(myType)) {
+                            if (!level.isClientSide() && player != null) {
+                                player.displayClientMessage(Component.translatable("message.mushokucraft.soul_anchor_layer_already_present"), true);
+                            }
+                            return InteractionResult.FAIL;
+                        }
+                    }
+                    if (!isBaseAnchor && isLayerAnchor) {
+                        if (!level.isClientSide() && player != null) {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.soul_anchor_cannot_be_layer"), true);
+                        }
+                        return InteractionResult.FAIL;
+                    }
+
+                    if (targetBE.isBarrierActive()) {
+                        if (!level.isClientSide() && player != null) {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.barrier_cannot_modify_active"), true);
+                        }
+                        return InteractionResult.FAIL;
+                    }
+
+                    if (targetBE.canAddLayer(myType)) {
+                        if (!level.isClientSide()) {
+                            if (hasCapturedMob(stack) && !targetBE.hasCapturedMob()) {
+                                targetBE.setCapturedMob(getCapturedEntityId(stack), getCapturedEntityTag(stack), getCapturedEntityName(stack), getCapturedEntityMaxHp(stack));
+                            }
+                            targetBE.addLayer(myType, getPattern(stack), getSize(stack));
+                            stack.shrink(1);
+                            level.playSound(null, centerPos, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0f, 0.8f);
+                            level.playSound(null, centerPos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.0f, 1.4f);
+                            level.playSound(null, centerPos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.0f, 1.2f);
+                            if (level instanceof ServerLevel sl) {
+                                sl.sendParticles(ParticleTypes.ENCHANT, centerPos.getX() + 0.5, centerPos.getY() + 0.4, centerPos.getZ() + 0.5, 30, 1.0, 0.3, 1.0, 0.1);
+                                sl.sendParticles(ParticleTypes.GLOW, centerPos.getX() + 0.5, centerPos.getY() + 0.4, centerPos.getZ() + 0.5, 15, 0.6, 0.2, 0.6, 0.05);
+                            }
+                            if (player != null) {
+                                MagicCircleType layerTypeObj = MagicCircleRegistry.get(myType);
+                                Component typeName = layerTypeObj != null ? layerTypeObj.getDisplayName() : Component.literal(myType != null ? myType.toString() : "Неизвестный");
+                                int layerNum = 1 + targetBE.getAdditionalLayers().size();
+                                String sizeStr = getSize(stack) == 3 ? "3x3" : "1x1";
+                                player.displayClientMessage(Component.translatable("message.mushokucraft.layer_added", layerNum, typeName, sizeStr), true);
+                            }
+                        }
+                        return InteractionResult.sidedSuccess(level.isClientSide());
+                    } else {
+                        if (!level.isClientSide() && player != null) {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.layer_max_reached"), true);
+                        }
+                        return InteractionResult.FAIL;
+                    }
                 } else {
                     if (!level.isClientSide() && player != null) {
-                        player.displayClientMessage(Component.translatable("message.mushokucraft.circle_types_dont_match"), true);
+                        player.displayClientMessage(Component.translatable("message.mushokucraft.multilayer_requires_3x3"), true);
                     }
                     return InteractionResult.FAIL;
                 }
@@ -292,7 +433,6 @@ public class InscribedManuscriptItem extends Item {
         }
 
         if (!level.isClientSide()) {
-            ResourceLocation teleportTypeId = ResourceLocation.fromNamespaceAndPath("mushokucraft", "teleport");
             if (size == 3) {
                 // Place center block
                 BlockState centerState = ModBlocks.MAGIC_CIRCLE.get().defaultBlockState()
@@ -317,6 +457,12 @@ public class InscribedManuscriptItem extends Item {
                     circleBE.setSheared(false);
                     MagicCirclePattern pattern = getPattern(stack);
                     ResourceLocation circleType = getCircleTypeId(stack);
+                    if (circleType != null && level instanceof ServerLevel sl) {
+                        MagicCirclePattern worldPattern = MagicCirclePatterns.getPatternForSeed(sl.getSeed(), circleType);
+                        if (worldPattern != null) {
+                            pattern = worldPattern;
+                        }
+                    }
                     BlockPos linkedPos = getLinkedPos(stack);
                     ResourceLocation linkedDim = getLinkedDim(stack);
 
@@ -339,7 +485,7 @@ public class InscribedManuscriptItem extends Item {
                         }
                     }
 
-                    if (linkedPos != null && teleportTypeId.equals(circleType)) {
+                    if (linkedPos != null && isTeleportType(circleType)) {
                         circleBE.setLinked(linkedPos, linkedDim);
 
                         if (linkedDim == null || linkedDim.equals(level.dimension().location())) {
@@ -365,6 +511,12 @@ public class InscribedManuscriptItem extends Item {
                     circleBE.setSheared(false);
                     MagicCirclePattern pattern = getPattern(stack);
                     ResourceLocation circleType = getCircleTypeId(stack);
+                    if (circleType != null && level instanceof ServerLevel sl) {
+                        MagicCirclePattern worldPattern = MagicCirclePatterns.getPatternForSeed(sl.getSeed(), circleType);
+                        if (worldPattern != null) {
+                            pattern = worldPattern;
+                        }
+                    }
                     BlockPos linkedPos = getLinkedPos(stack);
                     ResourceLocation linkedDim = getLinkedDim(stack);
 
@@ -387,7 +539,7 @@ public class InscribedManuscriptItem extends Item {
                         }
                     }
 
-                    if (linkedPos != null && teleportTypeId.equals(circleType)) {
+                    if (linkedPos != null && isTeleportType(circleType)) {
                         circleBE.setLinked(linkedPos, linkedDim);
 
                         if (linkedDim == null || linkedDim.equals(level.dimension().location())) {
@@ -419,9 +571,13 @@ public class InscribedManuscriptItem extends Item {
             if (dev.architectury.platform.Platform.getEnv() == net.fabricmc.api.EnvType.CLIENT) {
                 Player clientPlayer = net.minecraft.client.Minecraft.getInstance().player;
                 if (clientPlayer != null) {
-                    com.mushokucraft.data.PlayerMasteryData data = com.mushokucraft.data.PlayerMasteryProvider.get(clientPlayer);
-                    if (data != null && data.isCircleStudied(circleTypeId)) {
+                    if (clientPlayer.isCreative()) {
                         isStudied = true;
+                    } else {
+                        com.mushokucraft.data.PlayerMasteryData data = com.mushokucraft.data.PlayerMasteryProvider.get(clientPlayer);
+                        if (data != null && data.isCircleStudied(circleTypeId)) {
+                            isStudied = true;
+                        }
                     }
                 }
             }
@@ -443,8 +599,7 @@ public class InscribedManuscriptItem extends Item {
             tooltipComponents.add(Component.translatable("item.mushokucraft.inscribed_manuscript.size_3x3").withStyle(ChatFormatting.GOLD));
         }
 
-        ResourceLocation teleportTypeId = ResourceLocation.fromNamespaceAndPath("mushokucraft", "teleport");
-        if (teleportTypeId.equals(circleTypeId)) {
+        if (isTeleportType(circleTypeId)) {
             BlockPos linked = getLinkedPos(stack);
             if (linked != null) {
                 tooltipComponents.add(Component.translatable("item.mushokucraft.inscribed_manuscript.linked", linked.getX(), linked.getY(), linked.getZ()).withStyle(ChatFormatting.AQUA));
@@ -462,7 +617,7 @@ public class InscribedManuscriptItem extends Item {
         }
 
         tooltipComponents.add(Component.translatable("item.mushokucraft.inscribed_manuscript.help1").withStyle(ChatFormatting.DARK_PURPLE));
-        if (teleportTypeId.equals(circleTypeId)) {
+        if (isTeleportType(circleTypeId)) {
             tooltipComponents.add(Component.translatable("item.mushokucraft.inscribed_manuscript.help2").withStyle(ChatFormatting.DARK_PURPLE));
         }
     }

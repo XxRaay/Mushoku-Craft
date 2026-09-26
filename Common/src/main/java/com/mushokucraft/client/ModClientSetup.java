@@ -18,7 +18,6 @@ import com.mushokucraft.client.render.model.SabertoothWolfModel;
 import com.mushokucraft.client.render.model.WaterballModel;
 import com.mushokucraft.init.ModEntities;
 import com.mushokucraft.init.ModItems;
-import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.registry.client.level.entity.EntityModelLayerRegistry;
 import dev.architectury.registry.client.level.entity.EntityRendererRegistry;
@@ -30,9 +29,16 @@ import net.minecraft.resources.ResourceLocation;
 public class ModClientSetup {
 
     public static void register() {
-        ClientLifecycleEvent.CLIENT_SETUP.register(mc -> {
-            PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(ResourceLocation.fromNamespaceAndPath("mushokucraft", "animation"), 42, player -> new ModifierLayer<>());
-            dev.architectury.registry.client.rendering.BlockEntityRendererRegistry.register(com.mushokucraft.init.ModBlockEntities.MAGIC_CIRCLE_BE.get(), com.mushokucraft.client.render.block.MagicCircleBlockEntityRenderer::new);
+        PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(
+                ResourceLocation.fromNamespaceAndPath("mushokucraft", "animation"),
+                42,
+                player -> new ModifierLayer<>()
+        );
+        com.mushokucraft.init.ModBlockEntities.MAGIC_CIRCLE_BE.listen(type -> {
+            dev.architectury.registry.client.rendering.BlockEntityRendererRegistry.register(
+                    type,
+                    com.mushokucraft.client.render.block.MagicCircleBlockEntityRenderer::new
+            );
         });
 
         ClientGuiEvent.RENDER_HUD.register((graphics, tickDelta) -> {

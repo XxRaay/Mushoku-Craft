@@ -8,10 +8,15 @@ import com.mushokucraft.event.ModGameEvents;
 import com.mushokucraft.init.ModBlockEntities;
 import com.mushokucraft.init.ModBlocks;
 import com.mushokucraft.magic.circle.BarrierCircleType;
+import com.mushokucraft.magic.circle.CaptureCircleType;
 import com.mushokucraft.magic.circle.CrystallizationCircleType;
+import com.mushokucraft.magic.circle.DimensionalGateCircleType;
 import com.mushokucraft.magic.circle.MagicCirclePattern;
 import com.mushokucraft.magic.circle.MagicCircleRegistry;
 import com.mushokucraft.magic.circle.MagicCircleType;
+import com.mushokucraft.magic.circle.OvergrowthCircleType;
+import com.mushokucraft.magic.circle.SanctuaryCircleType;
+import com.mushokucraft.magic.circle.SoulAnchorCircleType;
 import com.mushokucraft.magic.circle.SummoningCircleType;
 import com.mushokucraft.magic.circle.TeleportCircleType;
 import net.minecraft.core.BlockPos;
@@ -40,10 +45,47 @@ import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class MagicCircleBlockEntity extends BlockEntity {
+    public static class CircleLayer {
+        private ResourceLocation circleTypeId;
+        private MagicCirclePattern pattern;
+        private int size; // 1 or 3
+
+        public CircleLayer(ResourceLocation circleTypeId, MagicCirclePattern pattern, int size) {
+            this.circleTypeId = circleTypeId;
+            this.pattern = pattern != null ? pattern : new MagicCirclePattern();
+            this.size = (size == 3) ? 3 : 1;
+        }
+
+        public ResourceLocation getCircleTypeId() { return circleTypeId; }
+        public MagicCirclePattern getPattern() { return pattern; }
+        public int getSize() { return size; }
+        public void setSize(int size) { this.size = (size == 3) ? 3 : 1; }
+
+        public CompoundTag save() {
+            CompoundTag tag = new CompoundTag();
+            if (circleTypeId != null) tag.putString("Type", circleTypeId.toString());
+            if (pattern != null) tag.put("Pattern", pattern.save());
+            tag.putInt("Size", size);
+            return tag;
+        }
+
+        public static CircleLayer load(CompoundTag tag) {
+            ResourceLocation type = tag.contains("Type") ? ResourceLocation.tryParse(tag.getString("Type")) : null;
+            MagicCirclePattern pat = tag.contains("Pattern") ? MagicCirclePattern.load(tag.getCompound("Pattern")) : new MagicCirclePattern();
+            int sz = tag.contains("Size") ? tag.getInt("Size") : 1;
+            return new CircleLayer(type, pat, sz);
+        }
+    }
+
+    public static final int MAX_ADDITIONAL_LAYERS = 2;
+    private final List<CircleLayer> additionalLayers = new ArrayList<>();
+
     private MagicCirclePattern pattern = new MagicCirclePattern();
     private ResourceLocation circleTypeId;
     private BlockPos linkedPos;
@@ -67,12 +109,52 @@ public class MagicCircleBlockEntity extends BlockEntity {
     private String capturedEntityName;
     private float capturedEntityMaxHp;
 
+    // Soul Anchor binding state
+    private UUID boundPlayerUUID;
+    private String boundPlayerName;
+
     // Client-side cached entity for 3D projection rendering
     private Entity clientRenderEntity;
     private String lastRenderEntityId;
 
     public MagicCircleBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MAGIC_CIRCLE_BE.get(), pos, state);
+    }
+
+    @Nullable
+    public UUID getBoundPlayerUUID() {
+        return boundPlayerUUID;
+    }
+
+    @Nullable
+    public String getBoundPlayerName() {
+        return boundPlayerName;
+    }
+
+    public void bindPlayer(Player player) {
+        this.boundPlayerUUID = player.getUUID();
+        this.boundPlayerName = player.getGameProfile().getName();
+        this.setChanged();
+        if (this.level != null && !this.level.isClientSide()) {
+            this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
+        }
+    }
+
+    public void clearBoundPlayer() {
+        this.boundPlayerUUID = null;
+        this.boundPlayerName = null;
+        this.setChanged();
+        if (this.level != null && !this.level.isClientSide()) {
+            this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
+        }
+    }
+
+    public boolean isBoundTo(UUID uuid) {
+        return this.boundPlayerUUID != null && this.boundPlayerUUID.equals(uuid);
+    }
+
+    public boolean isBound() {
+        return this.boundPlayerUUID != null;
     }
 
     public boolean hasCapturedMob() {
@@ -161,6 +243,13 @@ public class MagicCircleBlockEntity extends BlockEntity {
     }
 
     public ResourceLocation getCircleTypeId() {
+        if (circleTypeId == null && pattern != null && pattern.countFilled() > 0 && level != null) {
+            MagicCircleType type = MagicCircleRegistry.identify(level, pattern);
+            if (type != null) {
+                this.circleTypeId = type.getId();
+                this.setChanged();
+            }
+        }
         return circleTypeId;
     }
 
@@ -170,6 +259,9 @@ public class MagicCircleBlockEntity extends BlockEntity {
     }
 
     public MagicCircleType getCircleType() {
+        if (isDimensionalGate()) {
+            return MagicCircleRegistry.DIMENSIONAL_GATE;
+        }
         if (circleTypeId != null) {
             return MagicCircleRegistry.get(circleTypeId);
         }
@@ -229,6 +321,415 @@ public class MagicCircleBlockEntity extends BlockEntity {
         this.setChanged();
     }
 
+    public List<CircleLayer> getAdditionalLayers() {
+        return additionalLayers;
+    }
+
+    public boolean hasAdditionalLayers() {
+        return !additionalLayers.isEmpty();
+    }
+
+    public boolean hasLayerType(ResourceLocation typeId) {
+        if (typeId == null) return false;
+        for (CircleLayer layer : this.additionalLayers) {
+            if (typeId.equals(layer.getCircleTypeId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean canAddLayer(@Nullable ResourceLocation layerType) {
+        if (this.size != 3 || this.additionalLayers.size() >= MAX_ADDITIONAL_LAYERS) {
+            return false;
+        }
+        if (this.barrierActive) {
+            return false;
+        }
+        if (layerType == null) return true;
+
+        boolean isBaseGate = DimensionalGateCircleType.ID.equals(this.circleTypeId);
+        boolean isLayerGate = DimensionalGateCircleType.ID.equals(layerType);
+
+        // Dimensional Gate only works with itself!
+        if (isBaseGate && !isLayerGate) {
+            return false;
+        }
+        if (!isBaseGate && isLayerGate) {
+            return false;
+        }
+
+        boolean isBaseAnchor = SoulAnchorCircleType.ID.equals(this.circleTypeId);
+        boolean isLayerAnchor = SoulAnchorCircleType.ID.equals(layerType);
+        boolean isLayerSealing = CaptureCircleType.ID.equals(layerType);
+
+        // Soul Anchor accepts only Soul Anchor and Sealing (Capture) layers without duplicates!
+        if (isBaseAnchor) {
+            if (!isLayerAnchor && !isLayerSealing) {
+                return false;
+            }
+            if (hasLayerType(layerType)) {
+                return false;
+            }
+        }
+        if (!isBaseAnchor && isLayerAnchor) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean canAddLayer() {
+        return canAddLayer(null);
+    }
+
+    public boolean addLayer(ResourceLocation typeId, MagicCirclePattern pattern, int size) {
+        if (!canAddLayer(typeId)) return false;
+        this.additionalLayers.add(new CircleLayer(typeId, pattern, size));
+        this.requiredMana = calculateTotalRequiredMana(this.level);
+        this.setChanged();
+        if (this.level != null && !this.level.isClientSide()) {
+            this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
+        }
+        return true;
+    }
+
+    @Nullable
+    public CircleLayer popTopLayer() {
+        if (this.barrierActive) return null;
+        if (this.additionalLayers.isEmpty()) return null;
+        CircleLayer removed = this.additionalLayers.remove(this.additionalLayers.size() - 1);
+        this.requiredMana = calculateTotalRequiredMana(this.level);
+        if (!this.barrierActive) {
+            this.currentMana = Math.min(this.currentMana, this.requiredMana);
+        }
+        this.setChanged();
+        if (this.level != null && !this.level.isClientSide()) {
+            this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
+        }
+        return removed;
+    }
+
+    @Nullable
+    public CircleLayer getTopLayer() {
+        if (this.additionalLayers.isEmpty()) return null;
+        return this.additionalLayers.get(this.additionalLayers.size() - 1);
+    }
+
+    public boolean expandTopLayer() {
+        if (this.barrierActive) return false;
+        CircleLayer top = getTopLayer();
+        if (top != null && top.getSize() < 3) {
+            top.setSize(3);
+            this.requiredMana = calculateTotalRequiredMana(this.level);
+            this.setChanged();
+            if (this.level != null && !this.level.isClientSide()) {
+                this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if this circle contains the given circle type either as base or in attached layers.
+     */
+    public boolean hasCircleType(@Nullable ResourceLocation id) {
+        if (id == null) return false;
+        if (id.equals(this.circleTypeId)) return true;
+        for (CircleLayer layer : this.additionalLayers) {
+            if (id.equals(layer.getCircleTypeId())) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the size (1 or 3) associated with a given circle type on this circle.
+     */
+    public int getLayerSizeForType(@Nullable ResourceLocation typeId) {
+        if (typeId == null) return this.size;
+        if (typeId.equals(this.circleTypeId)) return this.size;
+        for (CircleLayer layer : this.additionalLayers) {
+            if (typeId.equals(layer.getCircleTypeId())) {
+                return layer.getSize();
+            }
+        }
+        return this.size;
+    }
+
+    /**
+     * Checks if this circle's base type is Dimensional Gate.
+     */
+    public boolean hasDimensionalGateType() {
+        return DimensionalGateCircleType.ID.equals(this.circleTypeId);
+    }
+
+    /**
+     * Checks if all attached layers have been expanded to size 3 (3x3).
+     */
+    public boolean allLayersExpanded() {
+        if (this.additionalLayers.isEmpty()) return false;
+        for (CircleLayer layer : this.additionalLayers) {
+            if (layer.getSize() < 3) return false;
+        }
+        return true;
+    }
+
+    /**
+     * An Interdimensional Gate MUST be multi-layered with itself!
+     * Requirements:
+     * 1. Base circle must be 3x3.
+     * 2. Base circle MUST be Dimensional Gate type.
+     * 3. Must have at least 1 additional layer.
+     * 4. All additional layers must also be Dimensional Gate type (only works with itself!).
+     * 5. All additional layers must be expanded to 3x3!
+     */
+    public boolean isDimensionalGate() {
+        if (this.size != 3) return false;
+        if (!DimensionalGateCircleType.ID.equals(this.circleTypeId)) return false;
+        if (this.additionalLayers.isEmpty()) return false;
+        for (CircleLayer layer : this.additionalLayers) {
+            if (!DimensionalGateCircleType.ID.equals(layer.getCircleTypeId())) return false;
+            if (layer.getSize() < 3) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks if this circle's base type is Barrier.
+     */
+    public boolean isBaseBarrier() {
+        return BarrierCircleType.ID.equals(this.circleTypeId);
+    }
+
+    /**
+     * Checks if this circle's base type is Soul Anchor.
+     */
+    public boolean hasSoulAnchorType() {
+        return SoulAnchorCircleType.ID.equals(this.circleTypeId);
+    }
+
+    /**
+     * A Soul Anchor is a sacred 3-layer ritual altar!
+     * Requirements:
+     * 1. Base circle must be 3x3.
+     * 2. Base circle MUST be Soul Anchor type.
+     * 3. Must have 2 additional layers (total 3 layers: base + 2 floating layers).
+     * 4. One additional layer must be Soul Anchor type.
+     * 5. One additional layer must be Sealing / Capture type.
+     * 6. All additional layers must be expanded to 3x3!
+     */
+    public boolean isSoulAnchor() {
+        if (this.size != 3) return false;
+        if (!SoulAnchorCircleType.ID.equals(this.circleTypeId)) return false;
+        if (this.additionalLayers.size() < 2) return false;
+
+        boolean hasAnchorLayer = false;
+        boolean hasSealingLayer = false;
+
+        for (CircleLayer layer : this.additionalLayers) {
+            if (layer.getSize() < 3) return false;
+            if (SoulAnchorCircleType.ID.equals(layer.getCircleTypeId())) {
+                hasAnchorLayer = true;
+            } else if (CaptureCircleType.ID.equals(layer.getCircleTypeId())) {
+                hasSealingLayer = true;
+            } else {
+                return false;
+            }
+        }
+        return hasAnchorLayer && hasSealingLayer;
+    }
+
+    public float calculateLayerRequiredMana(ResourceLocation typeId, int layerSize, @Nullable Level level) {
+        if (typeId == null) return 0.0f;
+        MagicCircleType type = MagicCircleRegistry.get(typeId);
+        if (type == null) return 0.0f;
+
+        String path = typeId.getPath();
+        return switch (path) {
+            case "dimensional_gate" -> MushokuConfig.MAGIC_CIRCLE_DIMENSIONAL_GATE_MANA.get().floatValue();
+            case "soul_anchor" -> MushokuConfig.MAGIC_CIRCLE_SOUL_ANCHOR_MANA.get().floatValue();
+            case "barrier" -> (layerSize == 3) ?
+                    MushokuConfig.MAGIC_CIRCLE_BARRIER_3X3_MANA.get().floatValue() :
+                    MushokuConfig.MAGIC_CIRCLE_BARRIER_1X1_MANA.get().floatValue();
+            case "sanctuary" -> (layerSize == 3) ?
+                    MushokuConfig.MAGIC_CIRCLE_SANCTUARY_3X3_MANA.get().floatValue() :
+                    MushokuConfig.MAGIC_CIRCLE_SANCTUARY_1X1_MANA.get().floatValue();
+            case "overgrowth" -> (layerSize == 3) ?
+                    MushokuConfig.MAGIC_CIRCLE_OVERGROWTH_3X3_MANA.get().floatValue() :
+                    MushokuConfig.MAGIC_CIRCLE_OVERGROWTH_1X1_MANA.get().floatValue();
+            case "capture" -> MushokuConfig.MAGIC_CIRCLE_CAPTURE_BASE_MANA.get().floatValue();
+            case "summoning" -> {
+                if (hasCapturedMob()) {
+                    float maxHp = getCapturedEntityMaxHp();
+                    float base = MushokuConfig.MAGIC_CIRCLE_SUMMON_BASE_MANA.get().floatValue();
+                    float perHp = MushokuConfig.MAGIC_CIRCLE_SUMMON_MANA_PER_HP.get().floatValue();
+                    yield base + maxHp * perHp;
+                }
+                yield 0.0f;
+            }
+            case "crystallization" -> {
+                CrystallizationCircleType.CrystallizationRecipe r = null;
+                if (level != null) {
+                    net.minecraft.world.entity.item.ItemEntity it = CrystallizationCircleType.findTargetItemEntity(level, worldPosition, layerSize);
+                    if (it != null) {
+                        r = CrystallizationCircleType.getRecipe(it.getItem().getItem());
+                    }
+                }
+                yield (r != null) ? r.manaCost() : 0.0f;
+            }
+            case "teleportation", "teleport" -> {
+                if (linkedPos != null) {
+                    double dx = worldPosition.getX() - linkedPos.getX();
+                    double dy = worldPosition.getY() - linkedPos.getY();
+                    double dz = worldPosition.getZ() - linkedPos.getZ();
+                    double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    yield (float) (MushokuConfig.MAGIC_CIRCLE_TELEPORT_BASE_MANA.get() + dist * MushokuConfig.MAGIC_CIRCLE_TELEPORT_MANA_PER_BLOCK.get());
+                }
+                yield 999999.0f;
+            }
+            default -> (level != null) ? type.calculateRequiredMana(level, worldPosition, linkedPos) : 0.0f;
+        };
+    }
+
+    /**
+     * Calculates the summed required mana across the base circle and all attached layers!
+     */
+    public float calculateTotalRequiredMana(@Nullable Level level) {
+        float total = 0.0f;
+        MagicCircleType baseType = getCircleType();
+        if (baseType != null) {
+            total += Math.max(0.0f, calculateLayerRequiredMana(baseType.getId(), this.size, level));
+        }
+
+        // Sum up every additional attached layer
+        for (CircleLayer layer : this.additionalLayers) {
+            ResourceLocation lId = layer.getCircleTypeId();
+            if (lId == null) continue;
+
+            float layerCost = calculateLayerRequiredMana(lId, layer.getSize(), level);
+            total += Math.max(0.0f, layerCost);
+        }
+
+        return total;
+    }
+
+    /**
+     * Triggers all active layers in this multi-layered circle simultaneously!
+     */
+    public boolean triggerAllLayers(ServerLevel level, BlockPos pos, @Nullable Player player) {
+        List<MagicCircleType> instantTypes = new ArrayList<>();
+        List<MagicCircleType> transitTypes = new ArrayList<>();
+        List<MagicCircleType> persistentTypes = new ArrayList<>();
+
+        Set<ResourceLocation> collected = new LinkedHashSet<>();
+        MagicCircleType baseType = getCircleType();
+        if (baseType != null) {
+            collected.add(baseType.getId());
+        }
+        for (CircleLayer layer : this.additionalLayers) {
+            if (layer.getCircleTypeId() != null) {
+                collected.add(layer.getCircleTypeId());
+            }
+        }
+
+        for (ResourceLocation id : collected) {
+            MagicCircleType t = MagicCircleRegistry.get(id);
+            if (t == null) continue;
+            if (DimensionalGateCircleType.ID.equals(id) || TeleportCircleType.ID.equals(id)) {
+                transitTypes.add(t);
+            } else if (BarrierCircleType.ID.equals(id) || SanctuaryCircleType.ID.equals(id) || OvergrowthCircleType.ID.equals(id)) {
+                persistentTypes.add(t);
+            } else {
+                instantTypes.add(t);
+            }
+        }
+
+        float instantManaCost = 0.0f;
+        boolean anyTriggered = false;
+
+        if (isBaseBarrier()) {
+            // Base is Barrier: the barrier MUST be activated first!
+            if (baseType == null) return false;
+            boolean barrierOk = baseType.onTrigger(level, pos, this.linkedPos, player);
+            if (!barrierOk || !this.barrierActive) {
+                // Barrier activation failed -> layers must not activate!
+                return false;
+            }
+            anyTriggered = true;
+
+            // Only AFTER the barrier is active, activate all additional layers!
+            for (MagicCircleType t : instantTypes) {
+                if (t.getId().equals(baseType.getId())) continue;
+                boolean ok = t.onTrigger(level, pos, this.linkedPos, player);
+                if (ok) {
+                    int layerSize = getLayerSizeForType(t.getId());
+                    instantManaCost += calculateLayerRequiredMana(t.getId(), layerSize, level);
+                }
+            }
+
+            for (MagicCircleType t : persistentTypes) {
+                if (t.getId().equals(baseType.getId())) continue;
+                t.onTrigger(level, pos, this.linkedPos, player);
+            }
+
+            for (MagicCircleType t : transitTypes) {
+                if (t.getId().equals(baseType.getId())) continue;
+                boolean ok = t.onTrigger(level, pos, this.linkedPos, player);
+                if (ok) {
+                    int layerSize = getLayerSizeForType(t.getId());
+                    instantManaCost += calculateLayerRequiredMana(t.getId(), layerSize, level);
+                }
+            }
+
+            if (!this.additionalLayers.isEmpty() && player != null) {
+                player.displayClientMessage(Component.translatable("message.mushokucraft.barrier_layers_activated", this.additionalLayers.size()), true);
+            }
+        } else {
+            // 1. Trigger instant non-transit layers (Crystallization, Summoning, etc.)
+            for (MagicCircleType t : instantTypes) {
+                boolean ok = t.onTrigger(level, pos, this.linkedPos, player);
+                if (ok) {
+                    anyTriggered = true;
+                    int layerSize = getLayerSizeForType(t.getId());
+                    instantManaCost += calculateLayerRequiredMana(t.getId(), layerSize, level);
+                }
+            }
+
+            // 2. Trigger persistent layers (Barrier)
+            for (MagicCircleType t : persistentTypes) {
+                boolean ok = t.onTrigger(level, pos, this.linkedPos, player);
+                if (ok) {
+                    anyTriggered = true;
+                }
+            }
+
+            // 3. Trigger transit layers last (Dimensional Gate, Teleportation)
+            for (MagicCircleType t : transitTypes) {
+                boolean ok = t.onTrigger(level, pos, this.linkedPos, player);
+                if (ok) {
+                    anyTriggered = true;
+                    int layerSize = getLayerSizeForType(t.getId());
+                    instantManaCost += calculateLayerRequiredMana(t.getId(), layerSize, level);
+                }
+            }
+        }
+
+        if (anyTriggered) {
+            if (persistentTypes.isEmpty()) {
+                this.currentMana = 0.0f;
+            } else {
+                this.currentMana = Math.max(0.0f, this.currentMana - instantManaCost);
+            }
+            this.triggerCooldown = 40;
+            this.setChanged();
+            level.sendBlockUpdated(pos, getBlockState(), getBlockState(), 3);
+            return true;
+        }
+
+        return false;
+    }
+
     public boolean isDestinationValid(Level level) {
         if (this.linkedPos == null) return false;
 
@@ -247,14 +748,26 @@ public class MagicCircleBlockEntity extends BlockEntity {
                 targetLevel.getChunk(this.linkedPos.getX() >> 4, this.linkedPos.getZ() >> 4);
             }
             if (targetLevel.getBlockEntity(this.linkedPos) instanceof MagicCircleBlockEntity targetBE) {
-                return this.circleTypeId != null && this.circleTypeId.equals(targetBE.getCircleTypeId());
+                if (this.isDimensionalGate()) {
+                    return targetBE.isDimensionalGate();
+                }
+                if (this.circleTypeId == null || !this.circleTypeId.equals(targetBE.getCircleTypeId())) {
+                    return false;
+                }
+                return true;
             }
             return false;
         }
 
         if (level.isLoaded(this.linkedPos)) {
             if (level.getBlockEntity(this.linkedPos) instanceof MagicCircleBlockEntity targetBE) {
-                return this.circleTypeId != null && this.circleTypeId.equals(targetBE.getCircleTypeId());
+                if (this.isDimensionalGate()) {
+                    return targetBE.isDimensionalGate();
+                }
+                if (this.circleTypeId == null || !this.circleTypeId.equals(targetBE.getCircleTypeId())) {
+                    return false;
+                }
+                return true;
             }
             return false;
         }
@@ -412,13 +925,29 @@ public class MagicCircleBlockEntity extends BlockEntity {
         }
 
         MagicCircleType type = be.getCircleType();
+        if (type != null) {
+            type.onServerTick((ServerLevel) level, pos, be);
+        }
+
+        // Also tick any additional layers!
+        // If base is a barrier, all additional layers are activated ONLY after the barrier is active!
+        // If base is a soul anchor, the additional layers are dedicated to the altar resonance (skip generic ticking)
+        if ((!be.isBaseBarrier() || be.isBarrierActive()) && !be.hasSoulAnchorType()) {
+            for (CircleLayer layer : be.getAdditionalLayers()) {
+                if (layer.getCircleTypeId() != null) {
+                    MagicCircleType layerType = MagicCircleRegistry.get(layer.getCircleTypeId());
+                    if (layerType != null) {
+                        layerType.onServerTick((ServerLevel) level, pos, be);
+                    }
+                }
+            }
+        }
+
         if (type == null) return;
 
-        type.onServerTick((ServerLevel) level, pos, be);
-
-        // Recalculate required mana
-        if (be.linkedPos != null || be.circleTypeId != null) {
-            be.requiredMana = type.calculateRequiredMana(level, pos, be.linkedPos);
+        // Recalculate required mana across all layers
+        if (be.linkedPos != null || be.circleTypeId != null || be.hasAdditionalLayers()) {
+            be.requiredMana = be.calculateTotalRequiredMana(level);
         }
 
         // Barrier upkeep drain
@@ -452,30 +981,55 @@ public class MagicCircleBlockEntity extends BlockEntity {
                             pos.getX() + 0.5 + halfSize, pos.getY() + 1.0, pos.getZ() + 0.5 + halfSize);
         List<Player> players = level.getEntitiesOfClass(Player.class, box);
 
-        boolean isTeleport = TeleportCircleType.ID.equals(be.circleTypeId);
-        boolean isSummoning = SummoningCircleType.ID.equals(be.circleTypeId);
-        boolean isCrystallization = CrystallizationCircleType.ID.equals(be.circleTypeId);
+        boolean isGate = be.isDimensionalGate();
+        boolean isGateCandidate = be.hasDimensionalGateType();
+        boolean hasTeleport = be.hasCircleType(TeleportCircleType.ID) && !isGate;
+        boolean hasSummoning = be.hasCircleType(SummoningCircleType.ID);
+        boolean hasCrystallization = be.hasCircleType(CrystallizationCircleType.ID);
         boolean canInfuse = true;
-        if (isTeleport) canInfuse = (be.linkedPos != null);
-        if (isSummoning) canInfuse = be.hasCapturedMob();
-        if (isCrystallization) canInfuse = (be.requiredMana > 0.0f);
+        if (isGate || hasTeleport) {
+            if (be.linkedPos == null) canInfuse = false;
+        }
+        if (hasSummoning && !be.hasCapturedMob()) {
+            canInfuse = false;
+        }
+        if (hasCrystallization && CrystallizationCircleType.findTargetItemEntity(level, pos, be.size) == null) {
+            canInfuse = false;
+        }
 
         for (Player player : players) {
             if (player.isShiftKeyDown()) {
+                if (isGateCandidate && !isGate) {
+                    if (level.getGameTime() % 40 == 0) {
+                        if (be.size < 3) {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.dimensional_gate_requires_3x3"), true);
+                        } else if (be.additionalLayers.isEmpty()) {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.dimensional_gate_requires_layers"), true);
+                        } else if (!be.allLayersExpanded()) {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.dimensional_gate_requires_layers_3x3"), true);
+                        } else {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.dimensional_gate_only_self"), true);
+                        }
+                    }
+                    continue;
+                }
+
                 if (!canInfuse) {
                     if (level.getGameTime() % 40 == 0) {
-                        if (isTeleport) {
+                        if (isGate && be.linkedPos == null) {
+                            player.displayClientMessage(Component.translatable("message.mushokucraft.dimensional_gate_unlinked"), true);
+                        } else if (hasTeleport && be.linkedPos == null) {
                             player.displayClientMessage(Component.translatable("message.mushokucraft.circle_not_linked"), true);
-                        } else if (isSummoning) {
+                        } else if (hasSummoning && !be.hasCapturedMob()) {
                             player.displayClientMessage(Component.translatable("message.mushokucraft.summon_requires_mob"), true);
-                        } else if (isCrystallization) {
+                        } else if (hasCrystallization && CrystallizationCircleType.findTargetItemEntity(level, pos, be.size) == null) {
                             player.displayClientMessage(Component.translatable("message.mushokucraft.crystallization_requires_mineral"), true);
                         }
                     }
                     continue;
                 }
-                // If destination is not valid/broken for teleport, reset link immediately!
-                if (isTeleport && !be.isDestinationValid(level)) {
+                // If destination is not valid/broken for teleport or gate, reset link immediately!
+                if ((hasTeleport || isGate) && !be.isDestinationValid(level)) {
                     be.setLinked(null, null);
                     be.setCurrentMana(0.0f);
                     be.setChanged();
@@ -503,6 +1057,14 @@ public class MagicCircleBlockEntity extends BlockEntity {
                             be.barrierHealth = Math.min(be.barrierMaxHealth, be.barrierHealth + drain * 0.5f);
                         }
                         type.onChannelTick((ServerLevel) level, pos, player, be.currentMana, be.requiredMana);
+                        for (CircleLayer layer : be.additionalLayers) {
+                            if (layer.getCircleTypeId() != null) {
+                                MagicCircleType lType = MagicCircleRegistry.get(layer.getCircleTypeId());
+                                if (lType != null && !lType.getId().equals(type.getId())) {
+                                    lType.onChannelTick((ServerLevel) level, pos, player, be.currentMana, be.requiredMana);
+                                }
+                            }
+                        }
 
                         if (player instanceof ServerPlayer sp) {
                             ModGameEvents.syncMana(sp, masteryData);
@@ -527,16 +1089,8 @@ public class MagicCircleBlockEntity extends BlockEntity {
 
                 // Check activation (only if not already active barrier)
                 if (!be.barrierActive && be.triggerCooldown <= 0 && be.currentMana >= be.requiredMana && be.requiredMana > 0.0f) {
-                    boolean success = type.onTrigger((ServerLevel) level, pos, be.linkedPos, player);
-                    if (success) {
-                        if (BarrierCircleType.ID.equals(be.circleTypeId)) {
-                            be.triggerCooldown = 20;
-                        } else {
-                            be.currentMana = 0.0f;
-                        }
-                        be.setChanged();
-                        level.sendBlockUpdated(pos, state, state, 3);
-                    } else {
+                    boolean success = be.triggerAllLayers((ServerLevel) level, pos, player);
+                    if (!success) {
                         be.triggerCooldown = 40; // 2s failure cooldown to avoid sound/chat spam
                     }
                 }
@@ -594,6 +1148,21 @@ public class MagicCircleBlockEntity extends BlockEntity {
             bList.add(bTag);
         }
         tag.put("BarrierPositions", bList);
+
+        // Additional Layers NBT
+        ListTag layerList = new ListTag();
+        for (CircleLayer layer : this.additionalLayers) {
+            layerList.add(layer.save());
+        }
+        tag.put("AdditionalLayers", layerList);
+
+        // Soul Anchor bound player NBT
+        if (this.boundPlayerUUID != null) {
+            tag.putUUID("BoundPlayerUUID", this.boundPlayerUUID);
+        }
+        if (this.boundPlayerName != null) {
+            tag.putString("BoundPlayerName", this.boundPlayerName);
+        }
     }
 
     @Override
@@ -658,6 +1227,27 @@ public class MagicCircleBlockEntity extends BlockEntity {
                 CompoundTag bTag = bList.getCompound(i);
                 this.barrierPositions.add(new BlockPos(bTag.getInt("X"), bTag.getInt("Y"), bTag.getInt("Z")));
             }
+        }
+
+        // Additional Layers NBT
+        this.additionalLayers.clear();
+        if (tag.contains("AdditionalLayers", 9)) {
+            ListTag lList = tag.getList("AdditionalLayers", 10);
+            for (int i = 0; i < lList.size(); i++) {
+                this.additionalLayers.add(CircleLayer.load(lList.getCompound(i)));
+            }
+        }
+
+        // Soul Anchor bound player NBT
+        if (tag.hasUUID("BoundPlayerUUID")) {
+            this.boundPlayerUUID = tag.getUUID("BoundPlayerUUID");
+        } else {
+            this.boundPlayerUUID = null;
+        }
+        if (tag.contains("BoundPlayerName")) {
+            this.boundPlayerName = tag.getString("BoundPlayerName");
+        } else {
+            this.boundPlayerName = null;
         }
     }
 

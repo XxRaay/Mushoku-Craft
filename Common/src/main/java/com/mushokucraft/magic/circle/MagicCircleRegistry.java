@@ -22,6 +22,8 @@ public class MagicCircleRegistry {
     public static final MagicCircleType CRYSTALLIZATION = register(new CrystallizationCircleType());
     public static final MagicCircleType SANCTUARY = register(new SanctuaryCircleType());
     public static final MagicCircleType OVERGROWTH = register(new OvergrowthCircleType());
+    public static final MagicCircleType DIMENSIONAL_GATE = register(new DimensionalGateCircleType());
+    public static final MagicCircleType SOUL_ANCHOR = register(new SoulAnchorCircleType());
 
     public static <T extends MagicCircleType> T register(T type) {
         CIRCLE_TYPES.put(type.getId(), type);
