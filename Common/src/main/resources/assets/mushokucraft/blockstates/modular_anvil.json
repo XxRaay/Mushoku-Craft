@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "mushokucraft:block/modular_anvil"
+    },
+    "facing=east": {
+      "model": "mushokucraft:block/modular_anvil",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "mushokucraft:block/modular_anvil",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "mushokucraft:block/modular_anvil",
+      "y": 270
+    }
+  }
+}

@@ -13,6 +13,24 @@ import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsE
 public class NeoForgeClientEvents {
 
     @SubscribeEvent
+    public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+        event.register(com.mushokucraft.init.ModMenuTypes.MODULAR_ANVIL.get(), com.mushokucraft.client.gui.ModularAnvilScreen::new);
+    }
+
+    @SubscribeEvent
+    public static void registerItemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
+        event.register(com.mushokucraft.client.render.ModItemColors::getModularWeaponColor,
+                ModItems.MODULAR_SWORD.get(),
+                ModItems.MODULAR_GREATSWORD.get(),
+                ModItems.MODULAR_SCYTHE.get(),
+                ModItems.MODULAR_DAGGER.get(),
+                ModItems.MODULAR_KATANA.get(),
+                ModItems.MODULAR_RAPIER.get()
+        );
+    }
+
+
+    @SubscribeEvent
     public static void registerClientExtensions(RegisterClientExtensionsEvent event) {
         event.registerItem(new IClientItemExtensions() {
             private MagicBookItemRenderer renderer;

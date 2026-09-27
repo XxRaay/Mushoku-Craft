@@ -40,6 +40,8 @@ public class ToukiManager {
 
         float mastery = data.getStanceMastery(data.getActiveStance());
         float drain = com.mushokucraft.config.MushokuConfig.TOUKI_MANA_DRAIN_BASE.get().floatValue() + com.mushokucraft.config.MushokuConfig.TOUKI_MANA_DRAIN_SCALING.get().floatValue() * mastery;
+        float discount = com.mushokucraft.accessory.AccessoryHelper.getToukiDrainDiscount(player);
+        drain = Math.max(0.1f, drain * (1.0f - discount));
         
         if (data.consumeMana(drain)) {
             return true; // syncNeeded

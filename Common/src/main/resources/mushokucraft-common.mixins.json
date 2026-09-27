@@ -5,6 +5,11 @@
   "mixins": [
     "PlayerEntityMixin"
   ],
+  "client": [
+    "LivingEntityRendererMixin",
+    "HumanoidArmorLayerMixin",
+    "PlayerRendererMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

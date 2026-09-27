@@ -31,8 +31,46 @@ public class PlayerMasteryData
     private boolean unlockedWaterGod = false;
     private boolean unlockedNorthGod = false;
     private boolean isToukiActive = false;
+    private boolean isAirCushionActive = false;
     private int shieldBlocks = 0;
     private final Map<ResourceLocation, Long> itemCooldownEnds = new HashMap<ResourceLocation, Long>();
+    private final java.util.Set<ResourceLocation> studiedCircles = new java.util.HashSet<ResourceLocation>();
+    private net.minecraft.core.BlockPos soulAnchorPos = null;
+    private ResourceLocation soulAnchorDim = null;
+
+    public boolean hasSoulAnchor() {
+        return this.soulAnchorPos != null && this.soulAnchorDim != null;
+    }
+
+    public net.minecraft.core.BlockPos getSoulAnchorPos() {
+        return this.soulAnchorPos;
+    }
+
+    public ResourceLocation getSoulAnchorDim() {
+        return this.soulAnchorDim;
+    }
+
+    public void setSoulAnchor(net.minecraft.core.BlockPos pos, ResourceLocation dim) {
+        this.soulAnchorPos = pos;
+        this.soulAnchorDim = dim;
+    }
+
+    public void clearSoulAnchor() {
+        this.soulAnchorPos = null;
+        this.soulAnchorDim = null;
+    }
+
+    public boolean isCircleStudied(ResourceLocation circleTypeId) {
+        return this.studiedCircles.contains(circleTypeId);
+    }
+
+    public boolean studyCircle(ResourceLocation circleTypeId) {
+        return this.studiedCircles.add(circleTypeId);
+    }
+
+    public java.util.Set<ResourceLocation> getStudiedCircles() {
+        return java.util.Collections.unmodifiableSet(this.studiedCircles);
+    }
 
     public PlayerMasteryData() {
         this.mana = ((Double)MushokuConfig.DEFAULT_MANA.get()).floatValue();
@@ -57,11 +95,19 @@ public class PlayerMasteryData
     }
 
     public void regenMana(float amount) {
-        this.mana = Math.min(this.mana + amount, this.maxMana);
+        this.regenMana(amount, this.maxMana);
+    }
+
+    public void regenMana(float amount, float maxLimit) {
+        this.mana = Math.min(this.mana + amount, maxLimit);
     }
 
     public void fullRestore() {
         this.mana = this.maxMana;
+    }
+
+    public void fullRestore(float maxLimit) {
+        this.mana = maxLimit;
     }
 
     public float getSchoolMastery(MagicSchool school) {
@@ -201,6 +247,14 @@ public class PlayerMasteryData
         this.isToukiActive = active;
     }
 
+    public boolean isAirCushionActive() {
+        return this.isAirCushionActive;
+    }
+
+    public void setAirCushionActive(boolean active) {
+        this.isAirCushionActive = active;
+    }
+
     public int getShieldBlocks() {
         return this.shieldBlocks;
     }
@@ -209,14 +263,37 @@ public class PlayerMasteryData
         ++this.shieldBlocks;
     }
 
+    private transient float lastSyncedEffectiveMax = -1.0f;
+
+    public float getLastSyncedEffectiveMax() {
+        return this.lastSyncedEffectiveMax;
+    }
+
+    public void setLastSyncedEffectiveMax(float value) {
+        this.lastSyncedEffectiveMax = value;
+    }
+
     public void setMana(float amount) {
-        this.mana = Math.min(amount, this.maxMana);
+        this.mana = Math.max(0.0f, amount);
+    }
+
+    public void setMana(float amount, float maxLimit) {
+        this.mana = Math.max(0.0f, Math.min(amount, maxLimit));
     }
 
     public void setMaxMana(float amount) {
         this.maxMana = amount;
-        if (this.mana > this.maxMana) {
-            this.mana = this.maxMana;
+    }
+
+    public void addMaxMana(float amount) {
+        if (amount <= 0.0f) {
+            return;
+        }
+        double cap = MushokuConfig.MAX_MANA_CAP.get();
+        if (cap > 0.0) {
+            this.maxMana = (float) Math.min(cap, this.maxMana + amount);
+        } else {
+            this.maxMana += amount;
         }
     }
 
@@ -275,13 +352,40 @@ public class PlayerMasteryData
             cdTag.putLong(entry.getKey().toString(), entry.getValue().longValue());
         }
         tag.put("ItemCooldownEnds", (Tag)cdTag);
+
+        net.minecraft.nbt.ListTag circlesTag = new net.minecraft.nbt.ListTag();
+        for (ResourceLocation id : this.studiedCircles) {
+            circlesTag.add(net.minecraft.nbt.StringTag.valueOf(id.toString()));
+        }
+        tag.put("StudiedCircles", (Tag)circlesTag);
+
+        if (this.soulAnchorPos != null && this.soulAnchorDim != null) {
+            tag.putInt("SoulAnchorX", this.soulAnchorPos.getX());
+            tag.putInt("SoulAnchorY", this.soulAnchorPos.getY());
+            tag.putInt("SoulAnchorZ", this.soulAnchorPos.getZ());
+            tag.putString("SoulAnchorDim", this.soulAnchorDim.toString());
+        }
+
         return tag;
     }
 
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
-        this.mana = tag.getFloat("Mana");
-        this.maxMana = tag.getFloat("MaxMana");
-        this.manaRegenRate = tag.getFloat("ManaRegenRate");
+        if (tag.contains("MaxMana")) {
+            this.maxMana = tag.getFloat("MaxMana");
+        }
+        if (this.maxMana <= 0.0f) {
+            this.maxMana = ((Double)MushokuConfig.DEFAULT_MAX_MANA.get()).floatValue();
+        }
+        if (tag.contains("Mana")) {
+            this.mana = tag.getFloat("Mana");
+        } else {
+            this.mana = this.maxMana;
+        }
+        if (tag.contains("ManaRegenRate")) {
+            this.manaRegenRate = tag.getFloat("ManaRegenRate");
+        } else {
+            this.manaRegenRate = ((Double)MushokuConfig.DEFAULT_MANA_REGEN_RATE.get()).floatValue();
+        }
         this.waterMastery = tag.getFloat("WaterMastery");
         this.fireMastery = tag.getFloat("FireMastery");
         this.earthMastery = tag.getFloat("EarthMastery");
@@ -321,7 +425,25 @@ public class PlayerMasteryData
                 this.itemCooldownEnds.put(ResourceLocation.parse((String)key), cdTag.getLong(key));
             }
         }
+        this.studiedCircles.clear();
+        if (tag.contains("StudiedCircles", Tag.TAG_LIST)) {
+            net.minecraft.nbt.ListTag circlesTag = tag.getList("StudiedCircles", Tag.TAG_STRING);
+            for (int i = 0; i < circlesTag.size(); i++) {
+                this.studiedCircles.add(ResourceLocation.parse(circlesTag.getString(i)));
+            }
+        }
+        if (tag.contains("SoulAnchorX") && tag.contains("SoulAnchorDim")) {
+            this.soulAnchorPos = new net.minecraft.core.BlockPos(
+                    tag.getInt("SoulAnchorX"),
+                    tag.getInt("SoulAnchorY"),
+                    tag.getInt("SoulAnchorZ"));
+            this.soulAnchorDim = ResourceLocation.parse(tag.getString("SoulAnchorDim"));
+        } else {
+            this.soulAnchorPos = null;
+            this.soulAnchorDim = null;
+        }
         this.isToukiActive = false;
+        this.isAirCushionActive = false;
     }
 }
 

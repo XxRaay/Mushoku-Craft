@@ -65,11 +65,51 @@ public class ModNetworking {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncToukiPacket.TYPE, SyncToukiPacket.STREAM_CODEC, (packet, context) -> {
             context.queue(() -> ClientPayloadHandler.handleSyncTouki(packet));
         });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, ToggleAirCushionPacket.TYPE, ToggleAirCushionPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handleServer(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncAirCushionPacket.TYPE, SyncAirCushionPacket.STREAM_CODEC, (packet, context) -> {
+            context.queue(() -> packet.handleClient());
+        });
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncFullMasteryPacket.TYPE, SyncFullMasteryPacket.STREAM_CODEC, (packet, context) -> {
             context.queue(() -> ClientPayloadHandler.handleSyncFullMastery(packet));
         });
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, MasteryGainedPacket.TYPE, MasteryGainedPacket.STREAM_CODEC, (packet, context) -> {
             context.queue(() -> ClientPayloadHandler.handleMasteryGained(packet));
         });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, InscribeCanvasPacket.TYPE, InscribeCanvasPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handle(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, ConsumeCanvasInkPacket.TYPE, ConsumeCanvasInkPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handle(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, SaveCanvasDraftPacket.TYPE, SaveCanvasDraftPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handle(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncMagicCirclesPacket.TYPE, SyncMagicCirclesPacket.STREAM_CODEC, (packet, context) -> {
+            context.queue(() -> packet.handleClient());
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, ForgeWeaponPacket.TYPE, ForgeWeaponPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handle(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, CancelCastPacket.TYPE, CancelCastPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handle(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, CastEndedPacket.TYPE, CastEndedPacket.STREAM_CODEC, (packet, context) -> {
+            context.queue(() -> ClientPayloadHandler.handleCastEnded(packet));
+        });
     }
 }
+

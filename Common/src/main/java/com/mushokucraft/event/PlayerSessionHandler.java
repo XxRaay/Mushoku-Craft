@@ -19,6 +19,9 @@ public class PlayerSessionHandler {
                 PlayerMasteryData data = (PlayerMasteryData)PlayerMasteryProvider.get(player2);
                 ModGameEvents.syncMana(player2, data);
                 NetworkManager.sendToPlayer((ServerPlayer)player2, (CustomPacketPayload)new SyncFullMasteryPacket(data.serializeNBT((HolderLookup.Provider)player2.level().registryAccess())));
+                long seed = player2.serverLevel().getSeed();
+                int patternIdx = com.mushokucraft.magic.circle.MagicCirclePatterns.getTeleportPatternIndexForSeed(seed);
+                NetworkManager.sendToPlayer(player2, new com.mushokucraft.network.SyncMagicCirclesPacket(seed, patternIdx));
             }
         });
 
@@ -42,6 +45,9 @@ public class PlayerSessionHandler {
             public void respawn(ServerPlayer player, boolean wonGame, net.minecraft.world.entity.Entity.RemovalReason reason) {
                 PlayerMasteryData data = (PlayerMasteryData)PlayerMasteryProvider.get(player);
                 NetworkManager.sendToPlayer(player, (CustomPacketPayload)new SyncFullMasteryPacket(data.serializeNBT((HolderLookup.Provider)player.level().registryAccess())));
+                long seed = player.serverLevel().getSeed();
+                int patternIdx = com.mushokucraft.magic.circle.MagicCirclePatterns.getTeleportPatternIndexForSeed(seed);
+                NetworkManager.sendToPlayer(player, new com.mushokucraft.network.SyncMagicCirclesPacket(seed, patternIdx));
             }
         });
     }

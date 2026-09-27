@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "mushokucraft:item/modular/rapier_handle",
+    "layer1": "mushokucraft:item/modular/rapier_guard",
+    "layer2": "mushokucraft:item/modular/rapier_blade",
+    "layer3": "mushokucraft:item/modular/rapier_core"
+  }
+}

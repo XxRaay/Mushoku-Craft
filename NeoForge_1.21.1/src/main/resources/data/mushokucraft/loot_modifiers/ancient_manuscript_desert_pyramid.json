@@ -1,0 +1,17 @@
+{
+  "type": "mushokucraft:add_item",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/desert_pyramid"
+    },
+    {
+      "condition": "minecraft:random_chance",
+      "chance": 0.04
+    }
+  ],
+  "item": {
+    "count": 1,
+    "id": "mushokucraft:ancient_manuscript"
+  }
+}

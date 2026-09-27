@@ -1,0 +1,23 @@
+{
+	"format_version": "1.21.11",
+	"texture_size": [32, 32],
+	"textures": {
+		"barrier": "mushokucraft:block/barrier_wall",
+		"particle": "mushokucraft:block/barrier_wall"
+	},
+	"render_type": "minecraft:translucent",
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 16, 1],
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#barrier"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#barrier"},
+				"east": {"uv": [0, 0, 1, 16], "texture": "#barrier"},
+				"west": {"uv": [0, 0, 1, 16], "texture": "#barrier"},
+				"up": {"uv": [0, 0, 16, 1], "texture": "#barrier"},
+				"down": {"uv": [0, 0, 16, 1], "texture": "#barrier"}
+			}
+		}
+	]
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "mushokucraft:item/zephyr_feather_charm"
+  }
+}

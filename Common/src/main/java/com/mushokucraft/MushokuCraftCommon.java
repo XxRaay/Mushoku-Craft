@@ -23,11 +23,27 @@ public class MushokuCraftCommon {
         
         // Register Registries
         ModBlocks.register();
+        com.mushokucraft.init.ModBlockEntities.register();
+        com.mushokucraft.init.ModMenuTypes.register();
         ModEntities.register();
         ModItems.register();
         ModCreativeTabs.register();
         ModEffects.register();
         ModLootModifiers.register();
+        com.mushokucraft.init.ModRecipeSerializers.register();
+        com.mushokucraft.init.ModProfessions.register();
+        dev.architectury.event.events.common.LifecycleEvent.SETUP.register(() -> {
+            com.mushokucraft.init.ModProfessions.registerPoiStates();
+            com.mushokucraft.init.ModProfessions.registerTrades();
+        });
+        dev.architectury.event.events.common.LifecycleEvent.SERVER_BEFORE_START.register(server -> {
+            com.mushokucraft.init.ModProfessions.registerPoiStates();
+        });
+        if (dev.architectury.platform.Platform.isFabric()) {
+            com.mushokucraft.init.ModProfessions.registerPoiStates();
+            com.mushokucraft.init.ModProfessions.registerTrades();
+        }
+        com.mushokucraft.worldgen.VillageStructureInjector.register();
         
         // Register Networking
         ModNetworking.register();
@@ -49,6 +65,8 @@ public class MushokuCraftCommon {
         LearningManager.register();
         ServerCastManager.register();
         ServerChargeManager.register();
+        com.mushokucraft.magic.companion.SummonCompanionManager.init();
+        com.mushokucraft.magic.circle.SoulRecallHandler.register();
         
         LOGGER.info("Mushoku Craft Common initialized.");
     }

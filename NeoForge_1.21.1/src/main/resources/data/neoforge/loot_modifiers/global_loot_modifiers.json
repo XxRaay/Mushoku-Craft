@@ -22,6 +22,20 @@
     "mushokucraft:earth_book_jungle_temple",
     "mushokucraft:earth_book_woodland_mansion",
     "mushokucraft:earth_book_pillager_outpost",
-    "mushokucraft:sword_god_scroll_end_city"
+    "mushokucraft:sword_god_scroll_end_city",
+    "mushokucraft:wind_book_dungeon",
+    "mushokucraft:wind_book_mineshaft",
+    "mushokucraft:wind_book_stronghold_library",
+    "mushokucraft:wind_book_desert_pyramid",
+    "mushokucraft:wind_book_jungle_temple",
+    "mushokucraft:wind_book_woodland_mansion",
+    "mushokucraft:wind_book_pillager_outpost",
+    "mushokucraft:ancient_manuscript_dungeon",
+    "mushokucraft:ancient_manuscript_mineshaft",
+    "mushokucraft:ancient_manuscript_stronghold_library",
+    "mushokucraft:ancient_manuscript_desert_pyramid",
+    "mushokucraft:ancient_manuscript_jungle_temple",
+    "mushokucraft:ancient_manuscript_woodland_mansion",
+    "mushokucraft:ancient_manuscript_pillager_outpost"
   ]
 }

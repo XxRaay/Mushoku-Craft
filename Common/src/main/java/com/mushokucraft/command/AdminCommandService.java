@@ -1,13 +1,23 @@
 package com.mushokucraft.command;
 
+import com.mushokucraft.MushokuCraftCommon;
 import com.mushokucraft.data.PlayerMasteryData;
 import com.mushokucraft.event.ModGameEvents;
 import com.mushokucraft.data.PlayerMasteryProvider;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 import java.util.Collection;
+import java.util.Optional;
 
 public class AdminCommandService {
     
@@ -74,6 +84,39 @@ public class AdminCommandService {
             }
         }
         return players.size();
+    }
+
+    public static int spawnStructure(CommandSourceStack source, BlockPos targetPos, String structureName) {
+        ServerLevel level = source.getLevel();
+        ResourceLocation location;
+        if (structureName.contains(":")) {
+            location = ResourceLocation.parse(structureName);
+        } else if ("mage_house".equalsIgnoreCase(structureName)) {
+            location = ResourceLocation.fromNamespaceAndPath(MushokuCraftCommon.MOD_ID, "village/houses/mage_house");
+        } else {
+            location = ResourceLocation.fromNamespaceAndPath(MushokuCraftCommon.MOD_ID, structureName);
+        }
+
+        Optional<StructureTemplate> templateOpt = level.getStructureManager().get(location);
+        if (templateOpt.isEmpty()) {
+            source.sendFailure(Component.literal("§c[MushokuCraft] Структура не найдена: " + location));
+            return 0;
+        }
+
+        StructureTemplate template = templateOpt.get();
+        StructurePlaceSettings settings = new StructurePlaceSettings()
+                .setRotation(Rotation.NONE)
+                .setMirror(Mirror.NONE)
+                .setIgnoreEntities(false);
+
+        boolean placed = template.placeInWorld(level, targetPos, targetPos, settings, level.getRandom(), Block.UPDATE_ALL);
+        if (placed) {
+            source.sendSuccess(() -> Component.literal("§a[MushokuCraft] Структура '" + structureName + "' успешно размещена на " + targetPos.toShortString()), true);
+            return 1;
+        } else {
+            source.sendFailure(Component.literal("§c[MushokuCraft] Не удалось разместить структуру на " + targetPos.toShortString()));
+            return 0;
+        }
     }
 }
 

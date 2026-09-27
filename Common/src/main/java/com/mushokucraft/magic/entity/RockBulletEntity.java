@@ -31,18 +31,29 @@ public class RockBulletEntity extends AbstractMagicProjectileEntity {
     @Override
     public void tick() {
         float scale = this.getChargeScale();
-        this.spinTicks += 10 + (int)(scale * 20);
+        // Only spin when flying, not while charging
+        if (!this.isCharging()) {
+            this.spinTicks += 10 + (int)(scale * 20);
+        }
         super.tick();
     }
 
     @Override
     public float getSpin(float partialTicks) {
+        if (this.isCharging()) {
+            return 0f; // No spin while charging — face forward like a bullet
+        }
         return this.spinTicks + partialTicks * (10 + this.getChargeScale() * 20);
     }
 
     @Override
     public boolean scalesWithCharge() {
         return false;
+    }
+
+    @Override
+    public com.mushokucraft.magic.MagicSchool getMagicSchool() {
+        return com.mushokucraft.magic.MagicSchool.EARTH;
     }
 
     @Override
@@ -56,7 +67,9 @@ public class RockBulletEntity extends AbstractMagicProjectileEntity {
                     this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE).getHolderOrThrow(com.mushokucraft.init.ModDamageTypes.MAGIC),
                     this, this.getOwner()
                 );
-                target.hurt(source, 8.0F * scale);
+                float baseDmg = com.mushokucraft.config.MushokuConfig.ROCK_BULLET_BASE_DAMAGE.get().floatValue();
+                float damage = com.mushokucraft.accessory.AccessoryHelper.applyMagicDamageBonus(this.getOwner(), this.getMagicSchool(), baseDmg * scale);
+                target.hurt(source, damage);
             }
             this.discard();
         }

@@ -63,7 +63,15 @@ public class ThrownSwordEntity extends ThrowableItemProjectile {
             if (result.getEntity() instanceof LivingEntity target && this.getOwner() instanceof LivingEntity owner) {
                 // Calculate damage based on the sword
                 float damage = MushokuConfig.THROWN_SWORD_DAMAGE.get().floatValue();
+                ItemStack swordStack = getSwordItem();
+                if (swordStack.getItem() instanceof com.mushokucraft.weapon.modular.ModularWeaponItem) {
+                    damage += com.mushokucraft.weapon.modular.ModularWeaponItem.getWeaponDamage(swordStack) * 0.6f;
+                } else if (swordStack.getItem() instanceof net.minecraft.world.item.TieredItem ti) {
+                    damage += (ti.getTier().getAttackDamageBonus() + 3.0f) * 0.6f;
+                }
                 target.hurt(this.damageSources().thrown(this, owner), damage);
+                target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, MushokuConfig.NORTH_GOD_SLOW_DURATION.get(), 1));
+                target.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.mushokucraft.init.ModEffects.BLEEDING, MushokuConfig.NORTH_GOD_BLEED_DURATION.get(), 0));
                 
                 // Return sword to owner if they are a player
                 if (owner instanceof net.minecraft.world.entity.player.Player player) {

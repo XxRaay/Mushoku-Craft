@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "mushokucraft:item/mana_silver_ring"
+  }
+}

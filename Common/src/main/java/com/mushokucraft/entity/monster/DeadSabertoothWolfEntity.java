@@ -34,7 +34,17 @@ public class DeadSabertoothWolfEntity extends AbstractCarcassEntity {
     protected ResourceKey<LootTable> getCarcassLootTable() {
         return CARCASS_LOOT;
     }
+
+    @Override
+    protected void dropCarcassLoot(net.minecraft.world.entity.player.Player player) {
+        super.dropCarcassLoot(player);
+        if (this.random.nextFloat() < com.mushokucraft.config.MushokuConfig.SABERTOOTH_CORE_DROP_CHANCE.get()) {
+            this.spawnAtLocation(com.mushokucraft.init.ModItems.SABERTOOTH_CORE.get().getDefaultInstance());
+            this.level().playSound(null, this.blockPosition(), net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP, net.minecraft.sounds.SoundSource.PLAYERS, 0.8f, 1.4f);
+        }
+    }
 }
+
 
 
 

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "mushokucraft:block/mage_workbench_front",
+    "north": "mushokucraft:block/mage_workbench_front",
+    "south": "mushokucraft:block/mage_workbench_side",
+    "east": "mushokucraft:block/mage_workbench_side",
+    "west": "mushokucraft:block/mage_workbench_side",
+    "up": "mushokucraft:block/mage_workbench_top",
+    "down": "mushokucraft:block/mage_workbench_bottom"
+  }
+}

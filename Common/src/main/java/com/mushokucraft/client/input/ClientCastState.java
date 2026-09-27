@@ -24,14 +24,17 @@ public class ClientCastState {
     public static String currentQteKey = "";
     public static float qteSpeedModifier = 1.0f;
     public static float qteTargetSizeModifier = 1.0f;
+    public static float qtePerfectMultiplier = 0.4f;
     public static float qteShrinkingCircleScale = 3.0f;
     public static boolean isLearningCast = false;
 
     public static void startCast(ResourceLocation spellId, int castTime, int fizzle, boolean isLearning) {
+        Minecraft mc = Minecraft.getInstance();
+        boolean immune = mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player);
         isCasting = true;
         currentSpell = spellId;
         totalTicks = castTime;
-        fizzleTick = fizzle;
+        fizzleTick = immune ? -1 : fizzle;
         elapsedTicks = 0;
         hasFizzled = false;
         fadeOutTimer = 0;
@@ -39,22 +42,31 @@ public class ClientCastState {
         isLearningCast = isLearning;
     }
 
-    public static void startQte(String keyLetter, float speedModifier, float targetSizeModifier) {
+    public static void startQte(String keyLetter, float speedModifier, float targetSizeModifier, float perfectMultiplier) {
         isQteActive = true;
         currentQteKey = keyLetter;
         qteSpeedModifier = speedModifier;
         qteTargetSizeModifier = targetSizeModifier;
+        qtePerfectMultiplier = perfectMultiplier;
         qteShrinkingCircleScale = 3.0f;
     }
 
     public static void endQte(boolean success) {
         isQteActive = false;
-        if (!success) {
+        Minecraft mc = Minecraft.getInstance();
+        boolean immune = mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player);
+        if (!success && !immune) {
             ClientCastState.triggerFizzle();
+        } else {
+            fizzleTick = -1;
         }
     }
 
     public static void triggerFizzle() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player)) {
+            return;
+        }
         if (fizzleTick <= 0) {
             fizzleTick = elapsedTicks;
         }
@@ -73,15 +85,15 @@ public class ClientCastState {
         if (isCasting) {
             if (isQteActive) {
                 if ((qteShrinkingCircleScale -= 0.15f * qteSpeedModifier) <= 0.0f) {
-                    ClientCastState.endQte(false);
-                    NetworkManager.sendToServer((CustomPacketPayload)new QteResultPacket(0, isLearningCast));
+                    Minecraft mc = Minecraft.getInstance();
+                    boolean immune = mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player);
+                    ClientCastState.endQte(immune);
+                    NetworkManager.sendToServer((CustomPacketPayload)new QteResultPacket(immune ? 1 : 0, isLearningCast));
                 }
                 return;
             }
             ++elapsedTicks;
-            if (fizzleTick > 0 && elapsedTicks >= fizzleTick) {
-                return; // Pause and wait for QTE packet from server
-            } else if (elapsedTicks >= totalTicks) {
+            if (elapsedTicks >= totalTicks) {
                 isCasting = false;
                 hasFizzled = false;
                 fadeOutTimer = 40;
@@ -109,6 +121,7 @@ public class ClientCastState {
         hasFizzled = false;
         fadeOutTimer = 0;
         isQteActive = false;
+        currentSpell = null;
         stopAnimations();
     }
 }

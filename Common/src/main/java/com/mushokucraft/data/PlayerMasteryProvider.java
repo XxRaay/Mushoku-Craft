@@ -17,6 +17,7 @@ public class PlayerMasteryProvider {
             PlayerMasteryData data = get(player);
             if (data != null) {
                 ModGameEvents.syncMastery(sp, data);
+                ModGameEvents.syncMana(sp, data);
             }
         }
     }

@@ -9,6 +9,7 @@ import com.mushokucraft.data.PlayerMasteryProvider;
 import com.mushokucraft.init.ModSpells;
 import com.mushokucraft.item.IMagicBook;
 import com.mushokucraft.magic.Spell;
+import com.mushokucraft.network.CastEndedPacket;
 import com.mushokucraft.network.CastStartedPacket;
 import com.mushokucraft.network.LearnSpellResultPacket;
 import com.mushokucraft.network.LearnSpellSyncPacket;
@@ -17,9 +18,11 @@ import com.mushokucraft.network.QteTriggerPacket;
 import com.mushokucraft.network.SyncManaPacket;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import dev.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -27,6 +30,19 @@ import net.fabricmc.api.Environment;
 public class ClientPayloadHandler {
     public static void handleCastStarted(CastStartedPacket packet) {
         ClientCastState.startCast(packet.spellId(), packet.castTimeTicks(), packet.fizzleTick(), false);
+    }
+
+    public static void handleCastEnded(CastEndedPacket packet) {
+        if (packet.reason() == CastEndedPacket.REASON_SUCCESS) {
+            ClientCastState.isCasting = false;
+            ClientCastState.hasFizzled = false;
+            ClientCastState.fadeOutTimer = 40;
+            ClientCastState.stopAnimations();
+        } else if (packet.reason() == CastEndedPacket.REASON_FIZZLE) {
+            ClientCastState.triggerFizzle();
+        } else {
+            ClientCastState.cancelAll();
+        }
     }
 
     public static void handleLearnSpellSync(LearnSpellSyncPacket packet) {
@@ -52,16 +68,30 @@ public class ClientPayloadHandler {
     }
 
     public static void handleQteTrigger(QteTriggerPacket packet) {
-        ClientCastState.startQte(packet.keyLetter(), packet.speedModifier(), packet.targetSizeModifier());
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player)) {
+            NetworkManager.sendToServer((CustomPacketPayload)new com.mushokucraft.network.QteResultPacket(1, ClientCastState.isLearningCast));
+            return;
+        }
+        ClientCastState.startQte(packet.keyLetter(), packet.speedModifier(), packet.targetSizeModifier(), packet.perfectMultiplier());
     }
 
     public static void handleLearnSpellResult(LearnSpellResultPacket packet) {
         Minecraft mc = Minecraft.getInstance();
         mc.options.setCameraType(CameraType.FIRST_PERSON);
+        if (packet.success()) {
+            ClientCastState.isCasting = false;
+            ClientCastState.hasFizzled = false;
+            ClientCastState.fadeOutTimer = 40;
+            ClientCastState.stopAnimations();
+        } else {
+            ClientCastState.triggerFizzle();
+        }
         if (mc.player != null) {
             if (packet.success()) {
                 PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(mc.player);
-                mastery.addSpellMastery(packet.spellId(), 0.1f);
+                float gain = packet.spellId().getPath().equals("air_cushion") ? 0.01f : 0.1f;
+                mastery.addSpellMastery(packet.spellId(), gain);
             } else {
                 ItemStack item = mc.player.getMainHandItem();
                 Item item2 = item.getItem();
@@ -75,6 +105,14 @@ public class ClientPayloadHandler {
 
     public static void handleSyncMana(SyncManaPacket packet) {
         ManaHudManager.ANIMATION_STATE.updateMana(packet.currentMana(), packet.maxMana());
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            PlayerMasteryData data = PlayerMasteryProvider.get(mc.player);
+            if (data != null) {
+                data.setMaxMana(packet.maxMana());
+                data.setMana(packet.currentMana());
+            }
+        }
     }
 
     public static void handleSyncFullMastery(com.mushokucraft.network.SyncFullMasteryPacket packet) {
@@ -83,6 +121,12 @@ public class ClientPayloadHandler {
             PlayerMasteryData data = PlayerMasteryProvider.get(mc.player);
             if (data != null) {
                 data.deserializeNBT(mc.player.level().registryAccess(), packet.data());
+                float effectiveMax = data.getMaxMana() + com.mushokucraft.accessory.AccessoryHelper.getMaxManaBonus(mc.player);
+                data.setMaxMana(effectiveMax);
+                if (data.getMana() > effectiveMax) {
+                    data.setMana(effectiveMax);
+                }
+                ManaHudManager.ANIMATION_STATE.updateMana(data.getMana(), effectiveMax);
             }
         }
     }
@@ -95,6 +139,19 @@ public class ClientPayloadHandler {
                 PlayerMasteryData data = PlayerMasteryProvider.get(player);
                 if (data != null) {
                     data.setToukiActive(packet.isActive());
+                }
+            }
+        }
+    }
+
+    public static void handleSyncAirCushion(com.mushokucraft.network.SyncAirCushionPacket packet) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null) {
+            net.minecraft.world.entity.Entity entity = mc.level.getEntity(packet.entityId());
+            if (entity instanceof Player player) {
+                PlayerMasteryData data = PlayerMasteryProvider.get(player);
+                if (data != null) {
+                    data.setAirCushionActive(packet.isActive());
                 }
             }
         }

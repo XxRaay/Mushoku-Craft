@@ -29,12 +29,12 @@ IMagicBook {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache((GeoAnimatable)this);
     public static final RawAnimation CAST_ANIM = RawAnimation.begin().thenPlay("cast");
     private final String elementPrefix;
-    private final String spellId;
+    private final java.util.List<String> spellIds;
 
-    public MagicBookItem(Item.Properties properties, String elementPrefix, String spellId) {
+    public MagicBookItem(Item.Properties properties, String elementPrefix, java.util.List<String> spellIds) {
         super(properties);
         this.elementPrefix = elementPrefix;
-        this.spellId = spellId;
+        this.spellIds = spellIds;
     }
 
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
@@ -46,7 +46,7 @@ IMagicBook {
 
     @Environment(EnvType.CLIENT)
     private void openLearningScreen() {
-        Minecraft.getInstance().setScreen((Screen)new MagicBookScreen(this.elementPrefix, this.spellId));
+        Minecraft.getInstance().setScreen((Screen)new MagicBookScreen(this.elementPrefix, this.spellIds));
     }
 
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
@@ -60,7 +60,7 @@ IMagicBook {
     @Override
     @Environment(EnvType.CLIENT)
     public Screen getLearningScreen() {
-        return new MagicBookScreen(this.elementPrefix, this.spellId);
+        return new MagicBookScreen(this.elementPrefix, this.spellIds);
     }
 
     @Override
