@@ -23,6 +23,16 @@ public class MushokuCraftFabricClient implements ClientModInitializer {
         QteInputHandler.register();
         ModKeybindings.register();
 
+        net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry.ITEM.register(
+                com.mushokucraft.client.render.ModItemColors::getModularWeaponColor,
+                com.mushokucraft.init.ModItems.MODULAR_SWORD.get(),
+                com.mushokucraft.init.ModItems.MODULAR_GREATSWORD.get(),
+                com.mushokucraft.init.ModItems.MODULAR_SCYTHE.get(),
+                com.mushokucraft.init.ModItems.MODULAR_DAGGER.get(),
+                com.mushokucraft.init.ModItems.MODULAR_KATANA.get(),
+                com.mushokucraft.init.ModItems.MODULAR_RAPIER.get()
+        );
+
         // Register magic circle block entity renderer on Fabric directly
         net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry.register(
                 com.mushokucraft.init.ModBlockEntities.MAGIC_CIRCLE_BE.get(),

@@ -289,5 +289,5 @@ MAGIC_CIRCLE_SUMMON_BASE_MANA = builder
 - [ ] Логика не захардкожена? (Числа вынесены в Config/Constants?)
 - [ ] Эвенты зарегистрированы через `dev.architectury.event.*` в методе `register()`?
 - [ ] Серверный код не вызывает классы рендера/клиента?
-- [ ] Для магических кругов: новый тип `MagicCircleType` зарегистрирован в `MagicCircleRegistry` (узор назначается процедурно по сиду из пула), а строки добавлены в языковые файлы?
+- [ ] Для магических кругов: новый тип `MagicCircleType` зарегистрирован в `MagicCircleRegistry` (узор назначается процедурно по сиду из пула), а строки (`magic_circle.<id>`, `gui.mushokucraft.ancient_manuscript.<id>.desc2`) добавлены в языковые файлы?
 

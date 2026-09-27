@@ -24,7 +24,7 @@ public class MagicCircleRegistry {
     public static final MagicCircleType OVERGROWTH = register(new OvergrowthCircleType());
     public static final MagicCircleType DIMENSIONAL_GATE = register(new DimensionalGateCircleType());
     public static final MagicCircleType SOUL_ANCHOR = register(new SoulAnchorCircleType());
-    public static final MagicCircleType MAGIC_CREATION = register(new MagicCreationCircleType());
+    public static final MagicCircleType MAGIC_CREATION = dev.architectury.platform.Platform.isFabric() ? null : register(new MagicCreationCircleType());
 
     public static <T extends MagicCircleType> T register(T type) {
         CIRCLE_TYPES.put(type.getId(), type);

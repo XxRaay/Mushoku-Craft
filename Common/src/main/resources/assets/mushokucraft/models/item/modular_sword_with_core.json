@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "mushokucraft:item/modular/sword_handle",
+    "layer1": "mushokucraft:item/modular/sword_guard",
+    "layer2": "mushokucraft:item/modular/sword_blade",
+    "layer3": "mushokucraft:item/modular/sword_core"
+  }
+}

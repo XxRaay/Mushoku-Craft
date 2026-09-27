@@ -31,6 +31,19 @@ public class MushokuCraftCommon {
         ModEffects.register();
         ModLootModifiers.register();
         com.mushokucraft.init.ModRecipeSerializers.register();
+        com.mushokucraft.init.ModProfessions.register();
+        dev.architectury.event.events.common.LifecycleEvent.SETUP.register(() -> {
+            com.mushokucraft.init.ModProfessions.registerPoiStates();
+            com.mushokucraft.init.ModProfessions.registerTrades();
+        });
+        dev.architectury.event.events.common.LifecycleEvent.SERVER_BEFORE_START.register(server -> {
+            com.mushokucraft.init.ModProfessions.registerPoiStates();
+        });
+        if (dev.architectury.platform.Platform.isFabric()) {
+            com.mushokucraft.init.ModProfessions.registerPoiStates();
+            com.mushokucraft.init.ModProfessions.registerTrades();
+        }
+        com.mushokucraft.worldgen.VillageStructureInjector.register();
         
         // Register Networking
         ModNetworking.register();

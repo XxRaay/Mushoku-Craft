@@ -75,7 +75,9 @@ public class ParryHandler {
                     srcEntity = source.getEntity();
                     if (srcEntity instanceof LivingEntity) {
                         LivingEntity attacker = (LivingEntity)srcEntity;
-                        attacker.hurt(((Player)livingEntity).damageSources().playerAttack((Player)livingEntity), ((Double)MushokuConfig.COUNTER_ATTACK_DAMAGE.get()).floatValue());
+                        float masteryFactor = 1.0f + mastery.getStanceMastery(SwordStyle.WATER_GOD);
+                        float baseCounter = ((Double)MushokuConfig.COUNTER_ATTACK_DAMAGE.get()).floatValue();
+                        attacker.hurt(((Player)livingEntity).damageSources().playerAttack((Player)livingEntity), baseCounter * masteryFactor);
                         ((Player)livingEntity).level().playSound(null, ((Player)livingEntity).getX(), ((Player)livingEntity).getY(), ((Player)livingEntity).getZ(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
                     }
                 }

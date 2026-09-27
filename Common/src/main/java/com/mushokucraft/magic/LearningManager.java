@@ -94,6 +94,14 @@ public class LearningManager {
         });
     }
 
+    public static void cancelLearning(ServerPlayer player) {
+        ActiveLearning task = learningTasks.remove(player.getUUID());
+        if (task != null) {
+            player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+            NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new LearnSpellResultPacket(false, task.spellId));
+        }
+    }
+
     public static void handleQteResult(ServerPlayer player, int result) {
         ActiveLearning cast = learningTasks.get(player.getUUID());
         if (cast != null && cast.isQteWaiting) {

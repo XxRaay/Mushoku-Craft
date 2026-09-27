@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "mushokucraft:item/modular/dagger_handle",
+    "layer1": "mushokucraft:item/modular/dagger_guard",
+    "layer2": "mushokucraft:item/modular/dagger_blade",
+    "layer3": "mushokucraft:item/modular/dagger_core"
+  }
+}

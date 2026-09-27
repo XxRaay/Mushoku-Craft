@@ -22,6 +22,9 @@ public class MushokuCraftNeoForge {
         
         NeoForgeLootModifiers.register(modEventBus);
         
+        modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(this::registerCapabilities);
+        
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ModClientEvents.register();
             ModClientSetup.register();
@@ -31,5 +34,17 @@ public class MushokuCraftNeoForge {
             QteInputHandler.register();
             ModKeybindings.register();
         }
+    }
+
+    private void commonSetup(net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            com.mushokucraft.neoforge.curios.CuriosIntegration.init();
+            com.mushokucraft.init.ModProfessions.registerPoiStates();
+            com.mushokucraft.init.ModProfessions.registerTrades();
+        });
+    }
+
+    private void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
+        com.mushokucraft.neoforge.curios.CuriosIntegration.init();
     }
 }

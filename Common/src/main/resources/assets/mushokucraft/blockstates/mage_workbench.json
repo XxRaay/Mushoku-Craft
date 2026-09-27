@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "mushokucraft:block/mage_workbench"
+    },
+    "facing=east": {
+      "model": "mushokucraft:block/mage_workbench",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "mushokucraft:block/mage_workbench",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "mushokucraft:block/mage_workbench",
+      "y": 270
+    }
+  }
+}

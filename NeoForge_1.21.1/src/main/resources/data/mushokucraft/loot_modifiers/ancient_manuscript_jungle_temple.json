@@ -1,0 +1,17 @@
+{
+  "type": "mushokucraft:add_item",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/jungle_temple"
+    },
+    {
+      "condition": "minecraft:random_chance",
+      "chance": 0.05
+    }
+  ],
+  "item": {
+    "count": 1,
+    "id": "mushokucraft:ancient_manuscript"
+  }
+}

@@ -18,7 +18,7 @@ public class PlayerInteractionBlocker {
         }
         if (player instanceof ServerPlayer) {
             ServerPlayer sp = (ServerPlayer)player;
-            return ServerChargeManager.isCharging(sp);
+            return ServerChargeManager.isCharging(sp) || com.mushokucraft.magic.ServerCastManager.hasActiveCast(sp.getUUID());
         }
         return false;
     }

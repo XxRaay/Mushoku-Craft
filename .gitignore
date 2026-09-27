@@ -34,3 +34,10 @@ Thumbs.db
 
 # Maven
 repo/
+
+# Scratch / temp
+scratch/
+__pycache__/
+*.pyc
+class_methods.txt
+clientlevel.txt

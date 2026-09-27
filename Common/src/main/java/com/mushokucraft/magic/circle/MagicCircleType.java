@@ -12,6 +12,10 @@ public interface MagicCircleType {
     Component getDisplayName();
     Component getDescription();
 
+    default Component getInstruction() {
+        return Component.translatable("gui.mushokucraft.ancient_manuscript." + getId().getPath() + ".desc2");
+    }
+
     float calculateRequiredMana(Level level, BlockPos origin, BlockPos destination);
     void onChannelTick(ServerLevel level, BlockPos pos, Player player, float infusedSoFar, float required);
     boolean onTrigger(ServerLevel level, BlockPos origin, BlockPos destination, Player player);

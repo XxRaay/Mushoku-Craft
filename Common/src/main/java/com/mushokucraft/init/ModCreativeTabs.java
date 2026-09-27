@@ -33,6 +33,7 @@ public class ModCreativeTabs {
                 output.accept(ModItems.MAGE_MEAT.get());
                 output.accept(ModItems.SABERTOOTH_LEATHER.get());
                 output.accept(ModItems.MODULAR_ANVIL.get());
+                output.accept(ModItems.MAGE_WORKBENCH.get());
                 output.accept(ModItems.BLANK_CANVAS.get());
                 output.accept(ModItems.MAGIC_CIRCLE.get());
                 output.accept(ModItems.SMALL_MANA_CRYSTAL.get());
@@ -76,7 +77,7 @@ public class ModCreativeTabs {
                 }
             }).build());
 
-    public static final Supplier<CreativeModeTab> ACCESSORIES_TAB = TABS.register("accessories_tab", () -> CreativeModeTab.builder(CreativeModeTab.Row.TOP, 2)
+    public static final Supplier<CreativeModeTab> ACCESSORIES_TAB = dev.architectury.platform.Platform.isFabric() ? null : TABS.register("accessories_tab", () -> CreativeModeTab.builder(CreativeModeTab.Row.TOP, 2)
             .title(Component.translatable("itemGroup.mushokucraft.accessories"))
             .icon(() -> ModItems.EYE_OF_LAPLACE.get().getDefaultInstance())
             .displayItems((params, output) -> {

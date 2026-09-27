@@ -99,7 +99,7 @@ public class AncientManuscriptScreen extends Screen {
 
         // Instructions formatted to strictly fit within the 152px parchment width
         Component desc1 = Component.translatable("gui.mushokucraft.ancient_manuscript.desc1");
-        Component desc2 = Component.translatable("gui.mushokucraft.ancient_manuscript.desc2");
+        Component desc2 = circleType != null ? circleType.getInstruction() : Component.translatable("gui.mushokucraft.ancient_manuscript.desc2");
         Component desc3 = Component.translatable("gui.mushokucraft.ancient_manuscript.desc3");
 
         guiGraphics.drawString(this.font, desc1, centerX - this.font.width(desc1) / 2, top + 160, 0x362113, false);

@@ -55,6 +55,15 @@ public class AirStrikeEntity extends AbstractMagicProjectileEntity {
         if (!this.level().isClientSide) {
             float scale = this.getChargeScale();
             if (pResult.getEntity() instanceof LivingEntity target) {
+                // Apply wind blade magic damage
+                net.minecraft.world.damagesource.DamageSource source = new net.minecraft.world.damagesource.DamageSource(
+                    this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE).getHolderOrThrow(com.mushokucraft.init.ModDamageTypes.MAGIC),
+                    this, this.getOwner()
+                );
+                float baseDmg = com.mushokucraft.config.MushokuConfig.AIR_STRIKE_BASE_DAMAGE.get().floatValue();
+                float damage = com.mushokucraft.accessory.AccessoryHelper.applyMagicDamageBonus(this.getOwner(), this.getMagicSchool(), baseDmg * scale);
+                target.hurt(source, damage);
+
                 // Knockback scaled by charge and wind magic bonus
                 double mult = com.mushokucraft.accessory.AccessoryHelper.getSchoolDamageMultiplier(this.getOwner(), this.getMagicSchool());
                 double knockbackStrength = 1.5D * scale * mult;

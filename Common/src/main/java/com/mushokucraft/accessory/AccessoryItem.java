@@ -1,32 +1,28 @@
 package com.mushokucraft.accessory;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.mushokucraft.magic.MagicSchool;
+import dev.architectury.platform.Platform;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.phys.AABB;
-import top.theillusivec4.curios.api.SlotContext;
-import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AccessoryItem extends Item implements ICurioItem {
+public class AccessoryItem extends Item {
 
     private final AccessoryType accessoryType;
     private final float maxManaBonus;
@@ -72,6 +68,10 @@ public class AccessoryItem extends Item implements ICurioItem {
         return this.schoolDamageBonuses.getOrDefault(school, 0f);
     }
 
+    public Map<MagicSchool, Float> getSchoolDamageBonuses() {
+        return Collections.unmodifiableMap(this.schoolDamageBonuses);
+    }
+
     public float getAllSchoolDamageBonus() {
         return this.allSchoolDamageBonus;
     }
@@ -96,9 +96,11 @@ public class AccessoryItem extends Item implements ICurioItem {
         return this.passiveId;
     }
 
-    @Override
-    public void curioTick(SlotContext slotContext, ItemStack stack) {
-        LivingEntity wearer = slotContext.entity();
+    public Map<Holder<Attribute>, Double> getAttributeModifiersMap() {
+        return Collections.unmodifiableMap(this.attributeModifiers);
+    }
+
+    public void handleCurioTick(LivingEntity wearer) {
         if (wearer == null || wearer.level().isClientSide) return;
 
         if ("tempest_vortex".equals(this.passiveId)) {
@@ -127,9 +129,8 @@ public class AccessoryItem extends Item implements ICurioItem {
         }
     }
 
-    @Override
-    public void onEquip(SlotContext slotContext, ItemStack prevStack, ItemStack stack) {
-        if (slotContext.entity() instanceof net.minecraft.server.level.ServerPlayer player) {
+    public void handleEquip(LivingEntity entity) {
+        if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
             com.mushokucraft.data.PlayerMasteryData data = com.mushokucraft.data.PlayerMasteryProvider.get(player);
             if (data != null) {
                 float effectiveMax = data.getMaxMana() + AccessoryHelper.getMaxManaBonus(player);
@@ -142,9 +143,8 @@ public class AccessoryItem extends Item implements ICurioItem {
         }
     }
 
-    @Override
-    public void onUnequip(SlotContext slotContext, ItemStack newStack, ItemStack stack) {
-        if (slotContext.entity() instanceof net.minecraft.server.level.ServerPlayer player) {
+    public void handleUnequip(LivingEntity entity) {
+        if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
             com.mushokucraft.data.PlayerMasteryData data = com.mushokucraft.data.PlayerMasteryProvider.get(player);
             if (data != null) {
                 float effectiveMax = data.getMaxMana() + AccessoryHelper.getMaxManaBonus(player);
@@ -157,23 +157,7 @@ public class AccessoryItem extends Item implements ICurioItem {
         }
     }
 
-    @Override
-    public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, ResourceLocation id, ItemStack stack) {
-        Multimap<Holder<Attribute>, AttributeModifier> modifiers = ArrayListMultimap.create();
-        for (Map.Entry<Holder<Attribute>, Double> entry : this.attributeModifiers.entrySet()) {
-            ResourceLocation modId = ResourceLocation.fromNamespaceAndPath("mushokucraft", "curio_" + id.getPath() + "_" + entry.getKey().getRegisteredName().replace(":", "_"));
-            AttributeModifier.Operation operation = AttributeModifier.Operation.ADD_VALUE;
-            if (entry.getKey().equals(Attributes.MOVEMENT_SPEED) || entry.getKey().equals(Attributes.ATTACK_SPEED)) {
-                operation = AttributeModifier.Operation.ADD_MULTIPLIED_BASE;
-            }
-            AttributeModifier modifier = new AttributeModifier(modId, entry.getValue(), operation);
-            modifiers.put(entry.getKey(), modifier);
-        }
-        return modifiers;
-    }
-
-    @Override
-    public List<Component> getAttributesTooltip(List<Component> tooltips, Item.TooltipContext context, ItemStack stack) {
+    public List<Component> buildTooltip(List<Component> tooltips, Item.TooltipContext context, ItemStack stack) {
         List<Component> result = new ArrayList<>(tooltips);
 
         // 1. Header: if Curios did not add the header (because vanilla attributes were empty), add it now
@@ -250,6 +234,9 @@ public class AccessoryItem extends Item implements ICurioItem {
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
+        if (!Platform.isModLoaded("curios")) {
+            tooltip.addAll(buildTooltip(List.of(), context, stack));
+        }
     }
 
     public static class Builder {

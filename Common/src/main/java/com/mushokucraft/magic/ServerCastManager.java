@@ -6,6 +6,7 @@ import com.mushokucraft.data.PlayerMasteryData;
 import com.mushokucraft.event.ModGameEvents;
 import com.mushokucraft.data.PlayerMasteryProvider;
 import com.mushokucraft.magic.Spell;
+import com.mushokucraft.network.CastEndedPacket;
 import com.mushokucraft.network.QteTriggerPacket;
 import com.mushokucraft.network.SyncManaPacket;
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public class ServerCastManager {
                     ManaProgressionManager.applySpellManaGrowth(player, data, fizzleCost * MushokuConfig.FIZZLE_MANA_GROWTH_MULT.get().floatValue(), cast.spell);
                     ModGameEvents.syncMana(player, data);
                     player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+                    NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new CastEndedPacket(CastEndedPacket.REASON_FIZZLE));
                     iterator.remove();
                     continue;
                 }
@@ -82,12 +84,14 @@ public class ServerCastManager {
                         cast.spell.getSpellAction().execute(player.level(), player, cast.spell);
                     }
                     data.addSpellMastery(cast.spell.getId(), ((Double)MushokuConfig.SPELL_MASTERY_PER_CAST.get()).floatValue());
-                    data.addSchoolMastery(cast.spell.getSchool(), ((Double)MushokuConfig.SCHOOL_MASTERY_PER_CAST.get()).floatValue());
+                    float rankMult = cast.spell.getRank() != null ? cast.spell.getRank().getSchoolXpMultiplier() : 1.0f;
+                    data.addSchoolMastery(cast.spell.getSchool(), ((Double)MushokuConfig.SCHOOL_MASTERY_PER_CAST.get()).floatValue() * rankMult);
                     ManaProgressionManager.applySpellManaGrowth(player, data, manaCost, cast.spell);
                     ModGameEvents.syncMana(player, data);
                     ModGameEvents.syncMastery(player, data);
                 }
                 player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+                NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new CastEndedPacket(CastEndedPacket.REASON_SUCCESS));
                 iterator.remove();
             }
         });
@@ -95,6 +99,42 @@ public class ServerCastManager {
         PlayerEvent.PLAYER_QUIT.register((player) -> {
             activeCasts.remove(player.getUUID());
         });
+    }
+
+    public static boolean hasActiveCast(UUID playerUUID) {
+        return activeCasts.containsKey(playerUUID);
+    }
+
+    public static boolean cancelCast(ServerPlayer player) {
+        ActiveCast cast = activeCasts.remove(player.getUUID());
+        if (cast != null) {
+            player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+            NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new CastEndedPacket(CastEndedPacket.REASON_CANCELLED));
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean interruptCast(ServerPlayer player, net.minecraft.world.damagesource.DamageSource source, float damage) {
+        ActiveCast cast = activeCasts.remove(player.getUUID());
+        if (cast != null) {
+            player.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), net.minecraft.sounds.SoundEvents.FIRE_EXTINGUISH, net.minecraft.sounds.SoundSource.PLAYERS, 1.2f, 0.8f);
+            if (player.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.SMOKE, player.getX(), player.getY() + 1.0, player.getZ(), 15, 0.3, 0.3, 0.3, 0.05);
+            }
+            PlayerMasteryData data = (PlayerMasteryData)PlayerMasteryProvider.get(player);
+            if (data != null) {
+                float baseCost = cast.spell.getEffectiveManaCost(data);
+                float penaltyCost = baseCost * 0.5f; // Consume partial mana on interruption
+                data.consumeMana(penaltyCost);
+                ModGameEvents.syncMana(player, data);
+            }
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatable("message.mushokucraft.cast_interrupted"), true);
+            NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new CastEndedPacket(CastEndedPacket.REASON_INTERRUPTED));
+            return true;
+        }
+        return false;
     }
 
     public static void startCast(ServerPlayer player, Spell spell, int castTime, int fizzleTick) {

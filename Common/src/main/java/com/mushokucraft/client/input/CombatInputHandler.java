@@ -5,6 +5,7 @@ import com.mushokucraft.client.input.ClientCastState;
 import com.mushokucraft.client.input.ClientSpellState;
 import com.mushokucraft.client.input.ClientStanceState;
 import com.mushokucraft.combat.SwordStyle;
+import com.mushokucraft.network.CancelCastPacket;
 import com.mushokucraft.network.ReleaseChargePacket;
 import com.mushokucraft.network.StartChargePacket;
 import com.mushokucraft.network.TriggerParryPacket;
@@ -33,6 +34,7 @@ public class CombatInputHandler {
     private static SwordStyle lastStance = null;
     private static KeyframeAnimationPlayer stanceAnimationPlayer = null;
     private static com.mushokucraft.magic.entity.IcicleBreakTargetEntity previewTargetEntity = null;
+    private static int lastSelectedSlot = -1;
 
     public static boolean isCharging() {
         return isCharging;
@@ -51,10 +53,16 @@ public class CombatInputHandler {
             if (ClientCastState.isQteActive) {
                 return EventResult.interruptFalse();
             }
+            if (action != GLFW.GLFW_PRESS) {
+                return EventResult.pass();
+            }
             boolean isAttack = mc.options.keyAttack.matchesMouse(button);
             boolean isUseItem = mc.options.keyUse.matchesMouse(button);
             
             if (isAttack && ClientSpellState.selectedSpell != null) {
+                if (ClientCastState.isCasting) {
+                    return EventResult.interruptFalse();
+                }
                 String spellName = ClientSpellState.selectedSpell.getPath();
                 if (spellName.equals("longsword_light") || spellName.equals("longsword_of_silence")) {
                     return EventResult.pass();
@@ -105,9 +113,31 @@ public class CombatInputHandler {
                 }
                 isCharging = false;
                 lastStance = null;
+                lastSelectedSlot = -1;
                 ClientCastState.cancelAll();
                 return;
             }
+
+            int currentSlot = mc.player.getInventory().selected;
+            if (lastSelectedSlot != -1 && currentSlot != lastSelectedSlot) {
+                if (ClientCastState.isCasting) {
+                    ClientCastState.cancelAll();
+                    NetworkManager.sendToServer(new CancelCastPacket());
+                }
+                if (isCharging) {
+                    isCharging = false;
+                    NetworkManager.sendToServer(new ReleaseChargePacket());
+                    CombatInputHandler.stopPlayerAnimation();
+                    lastStance = null;
+                }
+            }
+            lastSelectedSlot = currentSlot;
+
+            if (ClientSpellState.selectedSpell == null && ClientCastState.isCasting && !ClientCastState.isLearningCast) {
+                ClientCastState.cancelAll();
+                NetworkManager.sendToServer(new CancelCastPacket());
+            }
+
             if (animationPlayer != null && !animationPlayer.isActive()) {
                 animationPlayer = null;
                 lastStance = null;

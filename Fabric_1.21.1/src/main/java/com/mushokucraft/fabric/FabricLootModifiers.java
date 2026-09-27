@@ -21,9 +21,12 @@ public class FabricLootModifiers {
                 
                 LootPool.Builder poolBuilder = LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1))
-                        .add(LootItem.lootTableItem(ModItems.WATER_MAGIC_BOOK.get()).setWeight(15)) // roughly 0.15 chance
+                        .add(LootItem.lootTableItem(ModItems.WATER_MAGIC_BOOK.get()).setWeight(15))
                         .add(LootItem.lootTableItem(ModItems.FIRE_MAGIC_BOOK.get()).setWeight(15))
-                        .add(LootItem.lootTableItem(ModItems.EARTH_MAGIC_BOOK.get()).setWeight(15));
+                        .add(LootItem.lootTableItem(ModItems.EARTH_MAGIC_BOOK.get()).setWeight(15))
+                        .add(LootItem.lootTableItem(ModItems.WIND_MAGIC_BOOK.get()).setWeight(15))
+                        .add(LootItem.lootTableItem(ModItems.ANCIENT_MANUSCRIPT.get()).setWeight(4)) // very rare
+                        .add(net.minecraft.world.level.storage.loot.entries.EmptyLootItem.emptyItem().setWeight(100));
                 tableBuilder.withPool(poolBuilder);
             }
 

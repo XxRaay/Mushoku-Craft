@@ -1,0 +1,16 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "mushokucraft:item/modular/sword_handle",
+    "layer1": "mushokucraft:item/modular/sword_guard",
+    "layer2": "mushokucraft:item/modular/sword_blade"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "mushokucraft:has_core": 1.0
+      },
+      "model": "mushokucraft:item/modular_sword_with_core"
+    }
+  ]
+}

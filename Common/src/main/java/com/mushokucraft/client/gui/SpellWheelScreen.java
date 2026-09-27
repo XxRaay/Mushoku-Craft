@@ -2,12 +2,14 @@ package com.mushokucraft.client.gui;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mushokucraft.client.input.ClientCastState;
 import com.mushokucraft.client.input.ClientSpellState;
 import com.mushokucraft.client.input.ClientStanceState;
 import com.mushokucraft.client.input.ModKeybindings;
 import com.mushokucraft.combat.SwordStyle;
 import com.mushokucraft.data.PlayerMasteryData;
 import com.mushokucraft.data.PlayerMasteryProvider;
+import com.mushokucraft.network.CancelCastPacket;
 import com.mushokucraft.network.ToggleToukiPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -29,8 +31,17 @@ public class SpellWheelScreen extends Screen {
     private static final ResourceLocation ICICLE_BREAK_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_icicle_break.png");
     private static final ResourceLocation CUMULONIMBUS_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_cumulonimbus.png");
     private static final ResourceLocation FIREBALL_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_fireball.png");
+    private static final ResourceLocation FLAME_PILLAR_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_flame_pillar.png");
+    private static final ResourceLocation EXODUS_FLAME_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_exodus_flame.png");
+    private static final ResourceLocation FLASHOVER_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_flashover.png");
     private static final ResourceLocation ROCKBULLET_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_rockbullet.png");
+    private static final ResourceLocation EARTH_LANCE_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_earth_lance.png");
+    private static final ResourceLocation STONE_PILLAR_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_stone_pillar.png");
+    private static final ResourceLocation SANDSTORM_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_sandstorm.png");
     private static final ResourceLocation AIRSTRIKE_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_airstrike.png");
+    private static final ResourceLocation AIR_CUSHION_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_air_cushion.png");
+    private static final ResourceLocation TORNADO_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_tornado.png");
+    private static final ResourceLocation TYPHOON_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/spell_typhoon.png");
     private static final ResourceLocation SWORD_GOD_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/sword_god.png");
     private static final ResourceLocation WATER_GOD_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/water_god.png");
     private static final ResourceLocation NORTH_GOD_ICON = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/gui/north_god.png");
@@ -81,27 +92,54 @@ public class SpellWheelScreen extends Screen {
         this.slots.add(waterSlot);
 
         WheelSlot fireSlot = new WheelSlot(true, SCHOOL_FIRE_ICON, Component.translatable("spell.school.mushokucraft.fire"));
-        float fireMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "fireball")) : 0f;
-        fireSlot.mastery = fireMastery;
+        float fireballMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "fireball")) : 0f;
+        float flamePillarMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "flame_pillar")) : 0f;
+        float exodusFlameMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "exodus_flame")) : 0f;
+        float flashoverMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "flashover")) : 0f;
+        fireSlot.mastery = Math.max(Math.max(Math.max(fireballMastery, flamePillarMastery), exodusFlameMastery), flashoverMastery);
         fireSlot.isUnlocked = true;
         fireSlot.descColor = 0xFF5555;
-        fireSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "fireball"), FIREBALL_ICON, Component.translatable("spell.mushokucraft.fireball"), fireMastery, fireMastery > 0f));
+        fireSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "fireball"), FIREBALL_ICON, Component.translatable("spell.mushokucraft.fireball"), fireballMastery, fireballMastery > 0f));
+        fireSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "flame_pillar"), FLAME_PILLAR_ICON, Component.translatable("spell.mushokucraft.flame_pillar"), flamePillarMastery, flamePillarMastery > 0f));
+        fireSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "exodus_flame"), EXODUS_FLAME_ICON, Component.translatable("spell.mushokucraft.exodus_flame"), exodusFlameMastery, exodusFlameMastery > 0f));
+        fireSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "flashover"), FLASHOVER_ICON, Component.translatable("spell.mushokucraft.flashover"), flashoverMastery, flashoverMastery > 0f));
         this.slots.add(fireSlot);
 
         WheelSlot earthSlot = new WheelSlot(true, SCHOOL_EARTH_ICON, Component.translatable("spell.school.mushokucraft.earth"));
-        float earthMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "rockbullet")) : 0f;
-        earthSlot.mastery = earthMastery;
+        float rockbulletMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "rockbullet")) : 0f;
+        float earthLanceMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "earth_lance")) : 0f;
+        float stonePillarMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "stone_pillar")) : 0f;
+        float sandstormMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "sandstorm")) : 0f;
+        earthSlot.mastery = Math.max(Math.max(Math.max(rockbulletMastery, earthLanceMastery), stonePillarMastery), sandstormMastery);
         earthSlot.isUnlocked = true;
         earthSlot.descColor = 0xAA5500;
-        earthSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "rockbullet"), ROCKBULLET_ICON, Component.translatable("spell.mushokucraft.rockbullet"), earthMastery, earthMastery > 0f));
+        earthSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "rockbullet"), ROCKBULLET_ICON, Component.translatable("spell.mushokucraft.rockbullet"), rockbulletMastery, rockbulletMastery > 0f));
+        earthSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "earth_lance"), EARTH_LANCE_ICON, Component.translatable("spell.mushokucraft.earth_lance"), earthLanceMastery, earthLanceMastery > 0f));
+        earthSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "stone_pillar"), STONE_PILLAR_ICON, Component.translatable("spell.mushokucraft.stone_pillar"), stonePillarMastery, stonePillarMastery > 0f));
+        earthSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "sandstorm"), SANDSTORM_ICON, Component.translatable("spell.mushokucraft.sandstorm"), sandstormMastery, sandstormMastery > 0f));
         this.slots.add(earthSlot);
 
         WheelSlot windSlot = new WheelSlot(true, SCHOOL_WIND_ICON, Component.translatable("spell.school.mushokucraft.wind"));
-        float windMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "airstrike")) : 0f;
-        windSlot.mastery = windMastery;
+        float airstrikeMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "airstrike")) : 0f;
+        float airCushionMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "air_cushion")) : 0f;
+        float tornadoMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "tornado")) : 0f;
+        float typhoonMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "typhoon")) : 0f;
+        windSlot.mastery = Math.max(Math.max(Math.max(airstrikeMastery, airCushionMastery), tornadoMastery), typhoonMastery);
         windSlot.isUnlocked = true;
-        windSlot.descColor = 0x44FF44;
-        windSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "airstrike"), AIRSTRIKE_ICON, Component.translatable("spell.mushokucraft.airstrike"), windMastery, windMastery > 0f));
+        windSlot.descColor = 0x55FF55;
+        windSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "airstrike"), AIRSTRIKE_ICON, Component.translatable("spell.mushokucraft.airstrike"), airstrikeMastery, airstrikeMastery > 0f));
+        
+        boolean hasAirCushion = airCushionMastery > 0f;
+        boolean isAirCushionActive = mastery != null && mastery.isAirCushionActive();
+        SubSlot airCushionSub = new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "air_cushion"), AIR_CUSHION_ICON, Component.translatable("gui.mushokucraft.wind_magic_book.air_cushion.name"), airCushionMastery, hasAirCushion);
+        airCushionSub.action = () -> {
+            NetworkManager.sendToServer((CustomPacketPayload)new com.mushokucraft.network.ToggleAirCushionPacket());
+        };
+        airCushionSub.isActive = isAirCushionActive;
+        windSlot.subSlots.add(airCushionSub);
+
+        windSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "tornado"), TORNADO_ICON, Component.translatable("spell.mushokucraft.tornado"), tornadoMastery, tornadoMastery > 0f));
+        windSlot.subSlots.add(new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "typhoon"), TYPHOON_ICON, Component.translatable("spell.mushokucraft.typhoon"), typhoonMastery, typhoonMastery > 0f));
         this.slots.add(windSlot);
 
         WheelSlot healingSlot = new WheelSlot(true, WATERBALL_ICON, Component.translatable("spell.school.mushokucraft.healing"));
@@ -113,18 +151,6 @@ public class SpellWheelScreen extends Screen {
         emptySlot.isUnlocked = false;
         emptySlot.descColor = 0x555555;
         this.slots.add(emptySlot);
-        
-        ResourceLocation airCushionIcon = ResourceLocation.fromNamespaceAndPath("mushokucraft", "textures/spell/air_cushion.png");
-        float airCushionMastery = mastery != null ? mastery.getSpellMastery(ResourceLocation.fromNamespaceAndPath("mushokucraft", "air_cushion")) : 0f;
-        boolean hasAirCushion = airCushionMastery > 0f;
-        boolean isAirCushionActive = mastery != null && mastery.isAirCushionActive();
-
-        SubSlot airCushionSub = new SubSlot(ResourceLocation.fromNamespaceAndPath("mushokucraft", "air_cushion"), airCushionIcon, Component.translatable("gui.mushokucraft.wind_magic_book.air_cushion.name"), airCushionMastery, hasAirCushion);
-        airCushionSub.action = () -> {
-            NetworkManager.sendToServer((CustomPacketPayload)new com.mushokucraft.network.ToggleAirCushionPacket());
-        };
-        airCushionSub.isActive = isAirCushionActive;
-        windSlot.subSlots.add(airCushionSub);
 
         SwordStyle activeStance = ClientStanceState.selectedStance;
         float currentStanceMastery = (mastery != null && activeStance != null) ? mastery.getStanceMastery(activeStance) : 0f;
@@ -213,6 +239,12 @@ public class SpellWheelScreen extends Screen {
                     if (sub.action != null) {
                         sub.action.run();
                     } else {
+                        if (ClientSpellState.selectedSpell != null && !ClientSpellState.selectedSpell.equals(sub.spellId)) {
+                            if (ClientCastState.isCasting) {
+                                ClientCastState.cancelAll();
+                                NetworkManager.sendToServer((CustomPacketPayload) new CancelCastPacket());
+                            }
+                        }
                         ClientSpellState.selectedSpell = sub.spellId;
                     }
                     selectedSomething = true;
@@ -225,8 +257,12 @@ public class SpellWheelScreen extends Screen {
                 selectedSomething = true;
             }
         }
-        // If nothing was selected, clear the current spell
+        // If nothing was selected, clear the current spell and cancel active cast
         if (!selectedSomething) {
+            if (ClientSpellState.selectedSpell != null || ClientCastState.isCasting) {
+                ClientCastState.cancelAll();
+                NetworkManager.sendToServer((CustomPacketPayload) new CancelCastPacket());
+            }
             ClientSpellState.selectedSpell = null;
         }
         if (this.minecraft != null) {

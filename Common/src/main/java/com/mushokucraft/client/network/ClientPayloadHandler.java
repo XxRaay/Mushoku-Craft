@@ -9,6 +9,7 @@ import com.mushokucraft.data.PlayerMasteryProvider;
 import com.mushokucraft.init.ModSpells;
 import com.mushokucraft.item.IMagicBook;
 import com.mushokucraft.magic.Spell;
+import com.mushokucraft.network.CastEndedPacket;
 import com.mushokucraft.network.CastStartedPacket;
 import com.mushokucraft.network.LearnSpellResultPacket;
 import com.mushokucraft.network.LearnSpellSyncPacket;
@@ -29,6 +30,19 @@ import net.fabricmc.api.Environment;
 public class ClientPayloadHandler {
     public static void handleCastStarted(CastStartedPacket packet) {
         ClientCastState.startCast(packet.spellId(), packet.castTimeTicks(), packet.fizzleTick(), false);
+    }
+
+    public static void handleCastEnded(CastEndedPacket packet) {
+        if (packet.reason() == CastEndedPacket.REASON_SUCCESS) {
+            ClientCastState.isCasting = false;
+            ClientCastState.hasFizzled = false;
+            ClientCastState.fadeOutTimer = 40;
+            ClientCastState.stopAnimations();
+        } else if (packet.reason() == CastEndedPacket.REASON_FIZZLE) {
+            ClientCastState.triggerFizzle();
+        } else {
+            ClientCastState.cancelAll();
+        }
     }
 
     public static void handleLearnSpellSync(LearnSpellSyncPacket packet) {
@@ -65,6 +79,14 @@ public class ClientPayloadHandler {
     public static void handleLearnSpellResult(LearnSpellResultPacket packet) {
         Minecraft mc = Minecraft.getInstance();
         mc.options.setCameraType(CameraType.FIRST_PERSON);
+        if (packet.success()) {
+            ClientCastState.isCasting = false;
+            ClientCastState.hasFizzled = false;
+            ClientCastState.fadeOutTimer = 40;
+            ClientCastState.stopAnimations();
+        } else {
+            ClientCastState.triggerFizzle();
+        }
         if (mc.player != null) {
             if (packet.success()) {
                 PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(mc.player);

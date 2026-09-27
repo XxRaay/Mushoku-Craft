@@ -1,30 +1,33 @@
 package com.mushokucraft.accessory;
 
 import com.mushokucraft.magic.MagicSchool;
-import dev.architectury.platform.Platform;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import top.theillusivec4.curios.api.CuriosApi;
-import top.theillusivec4.curios.api.SlotResult;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccessoryHelper {
 
+    @FunctionalInterface
+    public interface AccessoryProvider {
+        List<ItemStack> getAccessories(LivingEntity entity);
+    }
+
+    private static AccessoryProvider provider = null;
+
+    public static void registerProvider(AccessoryProvider customProvider) {
+        provider = customProvider;
+    }
+
     public static List<ItemStack> getEquippedAccessories(LivingEntity entity) {
         List<ItemStack> list = new ArrayList<>();
         if (entity == null) return list;
 
-        if (Platform.isModLoaded("curios")) {
+        if (provider != null) {
             try {
-                CuriosApi.getCuriosInventory(entity).ifPresent(inv -> {
-                    List<SlotResult> results = inv.findCurios(stack -> stack.getItem() instanceof AccessoryItem);
-                    for (SlotResult res : results) {
-                        list.add(res.stack());
-                    }
-                });
+                list.addAll(provider.getAccessories(entity));
             } catch (Throwable ignored) {}
         }
 

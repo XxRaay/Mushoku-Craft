@@ -19,7 +19,4 @@ dependencies {
 
     // Player Animator (stub for compile)
     modCompileOnly files("../NeoForge_1.21.1/libs/player-animation-lib-forge-2.0.4+1.21.1.jar")
-
-    // Curios API
-    modCompileOnly "top.theillusivec4.curios:curios-neoforge:${rootProject.curios_version}:api"
 }

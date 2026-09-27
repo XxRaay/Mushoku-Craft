@@ -89,13 +89,13 @@ public class ServerChargeManager {
                 }
                 if ((chargeData = chargingPlayers.get(player2.getUUID())) != null) {
                     Spell spell = ModSpells.SPELLS.get(chargeData.spellId);
-                    boolean isChanneled = spell != null && (spell.isChanneled() || chargeData.spellId.getPath().equals("icicle_break"));
+                    boolean isChanneled = spell != null && (spell.isChanneled() || chargeData.spellId.getPath().equals("icicle_break") || chargeData.spellId.getPath().equals("flame_pillar"));
                     if (chargeData.ticks < (Integer)MushokuConfig.CHARGE_MAX_TICKS.get() || isChanneled) {
                         PlayerMasteryData data = (PlayerMasteryData)PlayerMasteryProvider.get(player2);
                     if (data.consumeMana(chargeData.maxManaDrainPerTick)) {
                         chargeData.totalManaSpent += chargeData.maxManaDrainPerTick;
                         ++chargeData.ticks;
-                        float progress = (float)chargeData.ticks / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue();
+                        float progress = Math.min(1.0f, (float)chargeData.ticks / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue());
                         float newScale = ((Double)MushokuConfig.CHARGE_MIN_SCALE.get()).floatValue() + progress * (((Double)MushokuConfig.CHARGE_MAX_SCALE.get()).floatValue() - ((Double)MushokuConfig.CHARGE_MIN_SCALE.get()).floatValue());
                         Projectile projectile = chargeData.entity;
                         if (projectile instanceof IMagicProjectile) {
@@ -267,7 +267,8 @@ public class ServerChargeManager {
                 spell.getSpellAction().execute(player.level(), player, spell);
             }
             data.addSpellMastery(spell.getId(), ((Double)MushokuConfig.SPELL_MASTERY_PER_CAST.get()).floatValue());
-            data.addSchoolMastery(spell.getSchool(), ((Double)MushokuConfig.SCHOOL_MASTERY_PER_CAST.get()).floatValue());
+            float rankMult = spell.getRank() != null ? spell.getRank().getSchoolXpMultiplier() : 1.0f;
+            data.addSchoolMastery(spell.getSchool(), ((Double)MushokuConfig.SCHOOL_MASTERY_PER_CAST.get()).floatValue() * rankMult);
             ManaProgressionManager.applySpellManaGrowth(player, data, manaCost, spell);
             ModGameEvents.syncMana(player, data);
             ModGameEvents.syncMastery(player, data);
@@ -279,6 +280,14 @@ public class ServerChargeManager {
         ChargeData chargeData = chargingPlayers.remove(player.getUUID());
         if (chargeData != null) {
             ServerChargeManager.fireCharge(player, chargeData);
+        }
+    }
+
+    public static void cancelCharge(ServerPlayer player) {
+        buttonHeldPlayers.remove(player.getUUID());
+        ChargeData chargeData = chargingPlayers.remove(player.getUUID());
+        if (chargeData != null && chargeData.entity != null) {
+            chargeData.entity.discard();
         }
     }
 
@@ -316,16 +325,22 @@ public class ServerChargeManager {
                 chargeScale = 1.0f;
             }
             Vec3 look = player.getLookAngle();
-            chargeData.entity.setPos(player.getX(), player.getEyeY() - 0.1, player.getZ());
+            String path = chargeData.spellId.getPath();
+            if (!path.equals("flame_pillar") && !path.equals("icicle_break") && !path.equals("flashover") && !path.equals("cumulonimbus") && !path.equals("earth_lance") && !path.equals("stone_pillar") && !path.equals("sandstorm") && !path.equals("typhoon")) {
+                chargeData.entity.setPos(player.getX(), player.getEyeY() - 0.1, player.getZ());
+            }
             Spell spell = ModSpells.SPELLS.get(chargeData.spellId);
             float baseSpeed = spell != null ? spell.getBaseSpeed() : 1.5f;
             float inaccuracy = spell != null ? spell.getBaseInaccuracy() : 1.0f;
-            float speedMult = chargeData.spellId.getPath().equals("rockbullet") ? chargeScale : 1.0f;
+            float speedMult = (chargeData.spellId.getPath().equals("rockbullet")) ? chargeScale : 1.0f;
             chargeData.entity.shoot(look.x, look.y, look.z, baseSpeed * speedMult, inaccuracy);
             PlayerMasteryData data = (PlayerMasteryData)PlayerMasteryProvider.get(player);
             if (spell != null) {
-                data.addSpellMastery(chargeData.spellId, ((Double)MushokuConfig.SPELL_MASTERY_PER_CAST.get()).floatValue() + (float)chargeData.ticks / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue() * ((Double)MushokuConfig.CHARGE_MASTERY_BONUS_SPELL.get()).floatValue());
-                data.addSchoolMastery(spell.getSchool(), ((Double)MushokuConfig.SCHOOL_MASTERY_PER_CAST.get()).floatValue() + (float)chargeData.ticks / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue() * ((Double)MushokuConfig.CHARGE_MASTERY_BONUS_SCHOOL.get()).floatValue());
+                float rankMult = spell.getRank() != null ? spell.getRank().getSchoolXpMultiplier() : 1.0f;
+                float spellGain = ((Double)MushokuConfig.SPELL_MASTERY_PER_CAST.get()).floatValue() + (float)chargeData.ticks / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue() * ((Double)MushokuConfig.CHARGE_MASTERY_BONUS_SPELL.get()).floatValue();
+                float schoolGain = (((Double)MushokuConfig.SCHOOL_MASTERY_PER_CAST.get()).floatValue() + (float)chargeData.ticks / (float)((Integer)MushokuConfig.CHARGE_MAX_TICKS.get()).intValue() * ((Double)MushokuConfig.CHARGE_MASTERY_BONUS_SCHOOL.get()).floatValue()) * rankMult;
+                data.addSpellMastery(chargeData.spellId, spellGain);
+                data.addSchoolMastery(spell.getSchool(), schoolGain);
                 ManaProgressionManager.applySpellManaGrowth(player, data, chargeData.totalManaSpent, spell);
                 ModGameEvents.syncMastery(player, data);
             }

@@ -150,6 +150,16 @@ public class ModGameEvents {
                         attacker.hurt(player.damageSources().inFire(), 3.0f);
                     }
                 }
+
+                // 3. Melee Cast Disruption (Swordsmen close-range superiority against chanting mages)
+                if (com.mushokucraft.config.MushokuConfig.CAST_INTERRUPTION_ON_MELEE.get() && com.mushokucraft.magic.ServerCastManager.hasActiveCast(player.getUUID())) {
+                    PlayerMasteryData mastery = (PlayerMasteryData)PlayerMasteryProvider.get(player);
+                    boolean hasPoise = mastery != null && mastery.isToukiActive();
+                    boolean isMelee = source.getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker && attacker != player && player.distanceTo(attacker) <= 6.0;
+                    if (isMelee && !hasPoise && amount >= com.mushokucraft.config.MushokuConfig.CAST_INTERRUPTION_MIN_DAMAGE.get().floatValue()) {
+                        com.mushokucraft.magic.ServerCastManager.interruptCast(player, source, amount);
+                    }
+                }
             }
 
             return EventResult.pass();

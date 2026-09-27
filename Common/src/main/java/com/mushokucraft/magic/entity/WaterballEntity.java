@@ -124,7 +124,8 @@ public class WaterballEntity extends AbstractMagicProjectileEntity {
                         this.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE).getHolderOrThrow(com.mushokucraft.init.ModDamageTypes.MAGIC),
                         this, this.getOwner()
                     );
-                    float damage = com.mushokucraft.accessory.AccessoryHelper.applyMagicDamageBonus(this.getOwner(), this.getMagicSchool(), 2.5F * scale);
+                    float baseDmg = com.mushokucraft.config.MushokuConfig.WATERBALL_BASE_DAMAGE.get().floatValue();
+                    float damage = com.mushokucraft.accessory.AccessoryHelper.applyMagicDamageBonus(this.getOwner(), this.getMagicSchool(), baseDmg * scale);
                     target.hurt(source, damage);
                 }
             }

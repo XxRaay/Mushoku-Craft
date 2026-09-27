@@ -97,5 +97,19 @@ public class ModNetworking {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncMagicCirclesPacket.TYPE, SyncMagicCirclesPacket.STREAM_CODEC, (packet, context) -> {
             context.queue(() -> packet.handleClient());
         });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, ForgeWeaponPacket.TYPE, ForgeWeaponPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handle(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, CancelCastPacket.TYPE, CancelCastPacket.STREAM_CODEC, (packet, context) -> {
+            if (context.getPlayer() instanceof ServerPlayer sp) {
+                context.queue(() -> packet.handle(sp));
+            }
+        });
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, CastEndedPacket.TYPE, CastEndedPacket.STREAM_CODEC, (packet, context) -> {
+            context.queue(() -> ClientPayloadHandler.handleCastEnded(packet));
+        });
     }
 }
+

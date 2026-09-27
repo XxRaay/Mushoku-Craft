@@ -35,6 +35,12 @@ public class ModBlocks {
                     .destroyTime(-1.0f)
             ));
 
+    public static final RegistrySupplier<Block> MAGE_WORKBENCH = BLOCKS.register("mage_workbench", () ->
+            new com.mushokucraft.block.MageWorkbenchBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.ofFullCopy(net.minecraft.world.level.block.Blocks.OAK_PLANKS)
+                    .strength(2.5f)
+                    .sound(net.minecraft.world.level.block.SoundType.WOOD)
+            ));
+
     public static void register() {
         BLOCKS.register();
     }

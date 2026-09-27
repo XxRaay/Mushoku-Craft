@@ -81,6 +81,10 @@ public abstract class AbstractMagicProjectileEntity extends ThrowableProjectile 
         super.tick();
 
         if (this.isCharging()) {
+            if (this.customTickLogic()) {
+                this.onChargingTick();
+                return;
+            }
             if (this.getOwner() instanceof LivingEntity owner) {
                 Vec3 look = owner.getLookAngle();
                 Vec3 pos = owner.getEyePosition().add(look.scale(1.2)).subtract(0, 0.4, 0);
