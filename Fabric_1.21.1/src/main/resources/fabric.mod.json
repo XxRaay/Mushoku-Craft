@@ -17,6 +17,12 @@
     ],
     "client": [
       "com.mushokucraft.fabric.client.MushokuCraftFabricClient"
+    ],
+    "jei_mod_plugin": [
+      "com.mushokucraft.compat.jei.MushokuJeiPlugin"
+    ],
+    "jei_plugins": [
+      "com.mushokucraft.compat.jei.MushokuJeiPlugin"
     ]
   },
   "mixins": [
@@ -31,6 +37,7 @@
     "architectury": "*"
   },
   "suggests": {
-    "trinkets": ">=3.10.0"
+    "trinkets": ">=3.10.0",
+    "jei": "*"
   }
 }

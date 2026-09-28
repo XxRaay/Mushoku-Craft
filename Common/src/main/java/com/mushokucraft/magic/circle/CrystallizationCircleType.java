@@ -48,6 +48,10 @@ public class CrystallizationCircleType implements MagicCircleType {
         return null;
     }
 
+    public static List<CrystallizationRecipe> getAllRecipes() {
+        return List.of(RECIPES);
+    }
+
     public static ItemEntity findTargetItemEntity(Level level, BlockPos pos, int size) {
         if (level == null) return null;
         double halfSize = (size == 3) ? 1.5 : 0.6;

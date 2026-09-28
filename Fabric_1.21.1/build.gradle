@@ -37,6 +37,10 @@ dependencies {
 
     // Trinkets API
     modImplementation "dev.emi:trinkets:${rootProject.trinkets_version}"
+
+    // JEI
+    modCompileOnly "mezz.jei:jei-1.21.1-fabric-api:${rootProject.jei_version}"
+    modLocalRuntime "mezz.jei:jei-1.21.1-fabric:${rootProject.jei_version}"
 }
 
 processResources {

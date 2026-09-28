@@ -15,7 +15,7 @@
   <a href="https://neoforged.net/"><img src="https://img.shields.io/badge/Loader-NeoForge-orange.svg" alt="NeoForge"></a>
   <a href="https://github.com/architectury/architectury-api"><img src="https://img.shields.io/badge/Architectury-13.0.6-purple.svg" alt="Architectury API"></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-FCAIL--1.7-lightgrey.svg" alt="License: FCAIL 1.7"></a>
-  <a href="gradle.properties"><img src="https://img.shields.io/badge/Version-0.5.2-red.svg" alt="Version 0.5.2"></a>
+  <a href="gradle.properties"><img src="https://img.shields.io/badge/Version-0.5.3-red.svg" alt="Version 0.5.3"></a>
 </p>
 
 ---
@@ -226,8 +226,8 @@ MushokuCraft/
 ```
 
 Собранные готовые моды будут находиться в:
-- **Fabric:** `Fabric_1.21.1/build/libs/mushokucraft-fabric-0.5.2.jar`
-- **NeoForge:** `NeoForge_1.21.1/build/libs/mushokucraft-neoforge-0.5.2.jar`
+- **Fabric:** `Fabric_1.21.1/build/libs/mushokucraft-fabric-0.5.3.jar`
+- **NeoForge:** `NeoForge_1.21.1/build/libs/mushokucraft-neoforge-0.5.3.jar`
 
 ---
 

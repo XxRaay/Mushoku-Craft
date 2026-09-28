@@ -19,4 +19,7 @@ dependencies {
 
     // Player Animator (stub for compile)
     modCompileOnly files("../NeoForge_1.21.1/libs/player-animation-lib-forge-2.0.4+1.21.1.jar")
+
+    // JEI API
+    modCompileOnly "mezz.jei:jei-1.21.1-common-api:${rootProject.jei_version}"
 }

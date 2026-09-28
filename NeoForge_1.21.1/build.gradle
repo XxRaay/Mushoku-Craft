@@ -45,6 +45,10 @@ dependencies {
         "libs/tiny-config-3.1.0-neoforge.jar",
         "libs/codecui-neoforge-1.21.1-1.1.5.jar"
     )
+
+    // JEI
+    modCompileOnly "mezz.jei:jei-1.21.1-neoforge-api:${rootProject.jei_version}"
+    modLocalRuntime "mezz.jei:jei-1.21.1-neoforge:${rootProject.jei_version}"
 }
 
 processResources {
