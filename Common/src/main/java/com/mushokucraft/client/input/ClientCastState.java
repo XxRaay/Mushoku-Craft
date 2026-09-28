@@ -34,7 +34,7 @@ public class ClientCastState {
         isCasting = true;
         currentSpell = spellId;
         totalTicks = castTime;
-        fizzleTick = immune ? -1 : fizzle;
+        fizzleTick = (immune || fizzle <= 0) ? -1 : fizzle;
         elapsedTicks = 0;
         hasFizzled = false;
         fadeOutTimer = 0;
@@ -43,6 +43,12 @@ public class ClientCastState {
     }
 
     public static void startQte(String keyLetter, float speedModifier, float targetSizeModifier, float perfectMultiplier) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player)) {
+            isQteActive = false;
+            fizzleTick = -1;
+            return;
+        }
         isQteActive = true;
         currentQteKey = keyLetter;
         qteSpeedModifier = speedModifier;
@@ -63,10 +69,6 @@ public class ClientCastState {
     }
 
     public static void triggerFizzle() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player)) {
-            return;
-        }
         if (fizzleTick <= 0) {
             fizzleTick = elapsedTicks;
         }

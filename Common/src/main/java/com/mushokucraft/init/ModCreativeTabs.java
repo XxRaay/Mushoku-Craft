@@ -77,7 +77,7 @@ public class ModCreativeTabs {
                 }
             }).build());
 
-    public static final Supplier<CreativeModeTab> ACCESSORIES_TAB = dev.architectury.platform.Platform.isFabric() ? null : TABS.register("accessories_tab", () -> CreativeModeTab.builder(CreativeModeTab.Row.TOP, 2)
+    public static final Supplier<CreativeModeTab> ACCESSORIES_TAB = TABS.register("accessories_tab", () -> CreativeModeTab.builder(CreativeModeTab.Row.TOP, 2)
             .title(Component.translatable("itemGroup.mushokucraft.accessories"))
             .icon(() -> ModItems.EYE_OF_LAPLACE.get().getDefaultInstance())
             .displayItems((params, output) -> {

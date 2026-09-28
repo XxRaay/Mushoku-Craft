@@ -34,6 +34,9 @@ dependencies {
 
     // Player Animator
     modImplementation "dev.kosmx.player-anim:player-animation-lib-fabric:2.0.4+1.21.1"
+
+    // Trinkets API
+    modImplementation "dev.emi:trinkets:${rootProject.trinkets_version}"
 }
 
 processResources {

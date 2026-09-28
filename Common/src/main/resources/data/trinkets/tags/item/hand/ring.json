@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "mushokucraft:apprentice_ring",
+    "mushokucraft:mana_copper_ring",
+    "mushokucraft:mana_silver_ring",
+    "mushokucraft:geomancer_stone_ring",
+    "mushokucraft:sorcerer_band",
+    "mushokucraft:inferno_ring",
+    "mushokucraft:duelist_ring",
+    "mushokucraft:vitality_mana_ring",
+    "mushokucraft:ring_of_eternal_tempest"
+  ]
+}

@@ -48,9 +48,6 @@ public class ModItems {
     public static final Supplier<Item> LARGE_MANA_CRYSTAL = ITEMS.register("large_mana_crystal", () -> new com.mushokucraft.item.ManaCrystalItem(new Item.Properties().stacksTo(16).rarity(Rarity.EPIC), 400.0f));
 
     private static Supplier<Item> registerAccessory(String id, Supplier<Item> supplier) {
-        if (dev.architectury.platform.Platform.isFabric()) {
-            return () -> net.minecraft.world.item.Items.AIR;
-        }
         return ITEMS.register(id, supplier);
     }
 

@@ -9,5 +9,6 @@ public class MushokuCraftFabric implements ModInitializer {
         MushokuCraftCommon.init();
         
         FabricLootModifiers.register();
+        com.mushokucraft.fabric.trinkets.TrinketsIntegration.init();
     }
 }
