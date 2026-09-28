@@ -20,8 +20,7 @@ public class CreationCircleRecipes {
     private static final List<CreationCircleRecipe> RECIPES = new ArrayList<>();
 
     static {
-        if (!dev.architectury.platform.Platform.isFabric()) {
-            // --- 1. Eye of Laplace (Unique Mythic Artifact) ---
+        // --- 1. Eye of Laplace (Unique Mythic Artifact) ---
         // Primary (Diamond Block)
         register(new CreationCircleRecipe(
                 ResourceLocation.fromNamespaceAndPath("mushokucraft", "eye_of_laplace"),
@@ -229,7 +228,6 @@ public class CreationCircleRecipes {
                 1,
                 Component.translatable("item.mushokucraft.celestial_mana_core")
         ));
-        }
     }
 
     public static void register(CreationCircleRecipe recipe) {

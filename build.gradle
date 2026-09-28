@@ -56,6 +56,14 @@ allprojects {
             name = "Curios"
             url = "https://maven.theillusivec4.top/"
         }
+        maven {
+            name = "TerraformersMC"
+            url = "https://maven.terraformersmc.com/releases/"
+        }
+        maven {
+            name = "Ladysnake Libs"
+            url = "https://maven.ladysnake.org/releases"
+        }
     }
 
     tasks.withType(JavaCompile) {

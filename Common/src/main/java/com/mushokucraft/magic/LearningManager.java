@@ -114,6 +114,8 @@ public class LearningManager {
                 }
                 cast.forceFizzle = true;
             } else {
+                cast.fizzleTick = -1;
+                cast.forceFizzle = false;
                 if (result == 2) {
                     cast.remainingTicks = Math.max(0, cast.remainingTicks - (Integer)MushokuConfig.QTE_PERFECT_TIME_BONUS_TICKS.get());
                 }
@@ -134,6 +136,7 @@ public class LearningManager {
         if (cast.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(cast.player)) {
             cast.fizzleTick = -1;
             cast.forceFizzle = false;
+            cast.qteTriggerTicks.clear();
             return;
         }
 
@@ -182,7 +185,11 @@ public class LearningManager {
         ArrayList<Integer> qteTicks = new ArrayList<Integer>();
         ActiveLearning castTask = new ActiveLearning(player, spellId, success, activeTicks, -1, qteTicks);
         learningTasks.put(player.getUUID(), castTask);
-        if (!immune) {
+        if (immune) {
+            castTask.forceFizzle = false;
+            castTask.fizzleTick = -1;
+            castTask.qteTriggerTicks.clear();
+        } else {
             if (spellId.getPath().equals("air_cushion")) {
                 qteTicks.add(16);
                 qteTicks.add(32);
@@ -196,7 +203,7 @@ public class LearningManager {
             }
         }
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, activeTicks + 10, 1, false, false, true));
-        NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new LearnSpellSyncPacket(spellId, immune ? -1 : castTask.fizzleTick));
+        NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new LearnSpellSyncPacket(spellId, activeTicks, immune ? -1 : castTask.fizzleTick));
     }
 
     private static class ActiveLearning {

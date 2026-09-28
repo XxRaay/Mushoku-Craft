@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "mushokucraft:aquamancer_drop_pendant",
+    "mushokucraft:mage_knight_amulet",
+    "mushokucraft:frost_necklace",
+    "mushokucraft:archmage_heart",
+    "mushokucraft:volcanic_sovereign_amulet"
+  ]
+}

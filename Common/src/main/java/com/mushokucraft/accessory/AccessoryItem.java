@@ -167,7 +167,7 @@ public class AccessoryItem extends Item {
         }
 
         // 2. Direct vanilla attribute modifiers fallback (in case player is null and Curios skipped applyTextFor)
-        if (result.size() <= 2 && !this.attributeModifiers.isEmpty()) {
+        if (!Platform.isModLoaded("trinkets") && result.size() <= 2 && !this.attributeModifiers.isEmpty()) {
             for (Map.Entry<Holder<Attribute>, Double> entry : this.attributeModifiers.entrySet()) {
                 if (entry.getKey().equals(Attributes.ATTACK_DAMAGE)) {
                     result.add(Component.translatable("tooltip.mushokucraft.accessory.mod.attack_damage", String.format("+%.1f", entry.getValue())).withStyle(net.minecraft.ChatFormatting.BLUE));

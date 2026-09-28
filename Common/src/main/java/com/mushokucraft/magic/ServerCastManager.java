@@ -138,10 +138,9 @@ public class ServerCastManager {
     }
 
     public static void startCast(ServerPlayer player, Spell spell, int castTime, int fizzleTick) {
-        float castReduction = com.mushokucraft.accessory.AccessoryHelper.getCastTimeReduction(player);
         boolean immune = com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(player);
-        int effectiveCastTime = Math.max(5, (int)(castTime * (1.0f - castReduction)));
-        int effectiveFizzleTick = (!immune && fizzleTick > 0) ? Math.max(2, (int)(fizzleTick * (1.0f - castReduction))) : -1;
+        int effectiveCastTime = castTime;
+        int effectiveFizzleTick = (!immune && fizzleTick > 0) ? fizzleTick : -1;
 
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, effectiveCastTime + 10, 1, false, false, true));
         
@@ -162,6 +161,11 @@ public class ServerCastManager {
             qteTicks.add(effectiveCastTime - effectiveFizzleTick);
         }
         ActiveCast cast = new ActiveCast(player, spell, effectiveCastTime, effectiveFizzleTick, qteTicks);
+        if (immune) {
+            cast.forceFizzle = false;
+            cast.fizzleTick = -1;
+            cast.qteTriggerTicks.clear();
+        }
         activeCasts.put(player.getUUID(), cast);
         if (!immune) {
             float schoolMastery = mastery.getSchoolMastery(spell.getSchool());
@@ -183,6 +187,8 @@ public class ServerCastManager {
                 }
                 cast.forceFizzle = true;
             } else {
+                cast.fizzleTick = -1;
+                cast.forceFizzle = false;
                 if (result == 2) {
                     cast.remainingTicks = Math.max(0, cast.remainingTicks - (Integer)MushokuConfig.QTE_PERFECT_TIME_BONUS_TICKS.get());
                 }
@@ -200,6 +206,7 @@ public class ServerCastManager {
         if (com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(cast.player)) {
             cast.fizzleTick = -1;
             cast.forceFizzle = false;
+            cast.qteTriggerTicks.clear();
             return;
         }
 

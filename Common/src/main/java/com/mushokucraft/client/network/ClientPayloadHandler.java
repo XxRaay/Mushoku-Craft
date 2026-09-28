@@ -53,7 +53,7 @@ public class ClientPayloadHandler {
             Item item;
             Spell spell = ModSpells.SPELLS.get(packet.spellId());
             if (spell != null) {
-                ClientCastState.startCast(spell.getId(), (int)spell.getBaseCastTimeTicks(), packet.fizzleTick(), true);
+                ClientCastState.startCast(spell.getId(), packet.castTimeTicks(), packet.fizzleTick(), true);
             }
             if ((item = (itemInHand = mc.player.getMainHandItem()).getItem()) instanceof IMagicBook) {
                 IMagicBook book = (IMagicBook)item;
@@ -70,6 +70,8 @@ public class ClientPayloadHandler {
     public static void handleQteTrigger(QteTriggerPacket packet) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null && com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(mc.player)) {
+            ClientCastState.isQteActive = false;
+            ClientCastState.fizzleTick = -1;
             NetworkManager.sendToServer((CustomPacketPayload)new com.mushokucraft.network.QteResultPacket(1, ClientCastState.isLearningCast));
             return;
         }

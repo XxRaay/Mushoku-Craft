@@ -15,7 +15,7 @@
   <a href="https://neoforged.net/"><img src="https://img.shields.io/badge/Loader-NeoForge-orange.svg" alt="NeoForge"></a>
   <a href="https://github.com/architectury/architectury-api"><img src="https://img.shields.io/badge/Architectury-13.0.6-purple.svg" alt="Architectury API"></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-FCAIL--1.7-lightgrey.svg" alt="License: FCAIL 1.7"></a>
-  <a href="gradle.properties"><img src="https://img.shields.io/badge/Version-0.5.1-red.svg" alt="Version 0.5.1"></a>
+  <a href="gradle.properties"><img src="https://img.shields.io/badge/Version-0.5.2-red.svg" alt="Version 0.5.2"></a>
 </p>
 
 ---
@@ -166,7 +166,7 @@
 
 ## 💍 Магические Артефакты и Аксессуары
 
-Мод содержит развитую систему аксессуаров, интегрированную с **Curios API** (на NeoForge) и поддерживаемую нативно:
+Мод содержит развитую систему аксессуаров, интегрированную с **Curios API** (на NeoForge) и **Trinkets API** (на Fabric):
 - **Тир 1 (Ученические):** Кольца медитации, амулеты искры пироманта, пояса мечника.
 - **Тир 2 (Боевые маги):** Амулет Рыцаря-Мага, Пояс Бури, Кольцо Дуэлянта.
 - **Тир 3 (Мифические реликвии):**
@@ -193,7 +193,7 @@
 ```
 MushokuCraft/
 ├── Common/          # 99% логики: заклинания, боевка, сущности, UI, регистраторы Architectury
-├── Fabric_1.21.1/   # Платформенный модуль Fabric (Fabric Loader, Fabric API)
+├── Fabric_1.21.1/   # Платформенный модуль Fabric (Fabric Loader, Fabric API, Trinkets integration)
 └── NeoForge_1.21.1/ # Платформенный модуль NeoForge (NeoForge, Curios integration)
 ```
 
@@ -202,6 +202,8 @@ MushokuCraft/
 - **Architectury API:** `13.0.6`
 - **NeoForge:** `21.1.235`
 - **Fabric Loader:** `0.16.2`
+- **Trinkets API:** `3.10.0`
+- **Curios API:** `9.5.1`
 - **GeckoLib:** `4.6.6`
 - **Java:** `21`
 
@@ -224,8 +226,8 @@ MushokuCraft/
 ```
 
 Собранные готовые моды будут находиться в:
-- **Fabric:** `Fabric_1.21.1/build/libs/mushokucraft-fabric-0.5.1.jar`
-- **NeoForge:** `NeoForge_1.21.1/build/libs/mushokucraft-neoforge-0.5.1.jar`
+- **Fabric:** `Fabric_1.21.1/build/libs/mushokucraft-fabric-0.5.2.jar`
+- **NeoForge:** `NeoForge_1.21.1/build/libs/mushokucraft-neoforge-0.5.2.jar`
 
 ---
 

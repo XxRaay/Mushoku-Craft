@@ -29,5 +29,8 @@
     "java": ">=21",
     "fabric-api": "*",
     "architectury": "*"
+  },
+  "suggests": {
+    "trinkets": ">=3.10.0"
   }
 }
