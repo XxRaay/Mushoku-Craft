@@ -99,7 +99,7 @@ public class ClientPayloadHandler {
                 Item item2 = item.getItem();
                 if (item2 instanceof IMagicBook) {
                     IMagicBook book = (IMagicBook)item2;
-                    mc.setScreen(book.getLearningScreen());
+                    book.openLearningScreen();
                 }
             }
         }

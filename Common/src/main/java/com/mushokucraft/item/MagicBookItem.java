@@ -1,9 +1,7 @@
 package com.mushokucraft.item;
 
-import com.mushokucraft.client.gui.MagicBookScreen;
-import com.mushokucraft.item.IMagicBook;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -11,8 +9,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.GeoItem;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -44,23 +40,19 @@ IMagicBook {
         return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
     }
 
-    @Environment(EnvType.CLIENT)
-    private void openLearningScreen() {
-        Minecraft.getInstance().setScreen((Screen)new MagicBookScreen(this.elementPrefix, this.spellIds));
-    }
-
-    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController((GeoAnimatable)this, "controller", 0, state -> PlayState.STOP).triggerableAnim("cast", CAST_ANIM).triggerableAnim("idle", RawAnimation.begin().thenPlay("idle")));
-    }
-
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return this.cache;
+    @Override
+    public void openLearningScreen() {
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.mushokucraft.client.gui.ClientScreenOpener.openMagicBookScreen(this.elementPrefix, this.spellIds));
     }
 
     @Override
-    @Environment(EnvType.CLIENT)
-    public Screen getLearningScreen() {
-        return new MagicBookScreen(this.elementPrefix, this.spellIds);
+    public void registerControllers(software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new software.bernie.geckolib.animation.AnimationController((software.bernie.geckolib.animatable.GeoAnimatable)this, "controller", 0, state -> software.bernie.geckolib.animation.PlayState.STOP).triggerableAnim("cast", CAST_ANIM).triggerableAnim("idle", software.bernie.geckolib.animation.RawAnimation.begin().thenPlay("idle")));
+    }
+
+    @Override
+    public software.bernie.geckolib.animatable.instance.AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     @Override

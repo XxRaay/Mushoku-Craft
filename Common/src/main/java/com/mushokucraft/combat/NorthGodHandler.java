@@ -31,7 +31,7 @@ public class NorthGodHandler {
                 return dev.architectury.event.CompoundEventResult.pass();
             }
             ItemStack stack = player.getItemInHand(hand);
-            if (!(stack.getItem() instanceof SwordItem)) {
+            if (!SwordCombatHelper.isSword(stack)) {
                 return dev.architectury.event.CompoundEventResult.pass();
             }
             if (player.level().isClientSide) {
@@ -56,14 +56,14 @@ public class NorthGodHandler {
             LivingEntity livingEntity = entity;
             if (livingEntity instanceof Player) {
                 Player victim = (Player)livingEntity;
-                if (source.is(DamageTypeTags.IS_FALL) && (mastery = PlayerMasteryProvider.get(victim)) != null && ((PlayerMasteryData)mastery).getActiveStance() == SwordStyle.NORTH_GOD && ((PlayerMasteryData)mastery).isToukiActive() && victim.getMainHandItem().getItem() instanceof SwordItem) {
+                if (source.is(DamageTypeTags.IS_FALL) && (mastery = PlayerMasteryProvider.get(victim)) != null && ((PlayerMasteryData)mastery).getActiveStance() == SwordStyle.NORTH_GOD && ((PlayerMasteryData)mastery).isToukiActive() && SwordCombatHelper.isSword(victim.getMainHandItem())) {
                     float stanceMastery = ((PlayerMasteryData)mastery).getStanceMastery(SwordStyle.NORTH_GOD);
                     float safeFallIncrease = ((Double)MushokuConfig.NORTH_GOD_FALL_ABSORB_BASE.get()).floatValue() + ((Double)MushokuConfig.NORTH_GOD_FALL_ABSORB_SCALING.get()).floatValue() * stanceMastery;
                     float newDamage = Math.max(0.0f, amount - safeFallIncrease);
                     // To handle damage modification correctly in Architectury API without direct setter, we should normally return something else, but we keep logic intact.
                 }
             }
-            if ((mastery = source.getEntity()) instanceof Player && (mastery = PlayerMasteryProvider.get((Player)mastery)) != null && ((PlayerMasteryData)mastery).getActiveStance() == SwordStyle.NORTH_GOD && ((Player)source.getEntity()).getMainHandItem().getItem() instanceof SwordItem) {
+            if ((mastery = source.getEntity()) instanceof Player && (mastery = PlayerMasteryProvider.get((Player)mastery)) != null && ((PlayerMasteryData)mastery).getActiveStance() == SwordStyle.NORTH_GOD && SwordCombatHelper.isSword(((Player)source.getEntity()).getMainHandItem())) {
                 entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, ((Integer)MushokuConfig.NORTH_GOD_SLOW_DURATION.get()).intValue(), 1));
                 entity.addEffect(new MobEffectInstance(ModEffects.BLEEDING, ((Integer)MushokuConfig.NORTH_GOD_BLEED_DURATION.get()).intValue(), 0));
             }

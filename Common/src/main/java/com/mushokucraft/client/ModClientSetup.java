@@ -29,6 +29,7 @@ import net.minecraft.resources.ResourceLocation;
 public class ModClientSetup {
 
     public static void register() {
+        com.mushokucraft.client.network.ClientNetworking.register();
         PlayerAnimationFactory.ANIMATION_DATA_FACTORY.registerFactory(
                 ResourceLocation.fromNamespaceAndPath("mushokucraft", "animation"),
                 42,

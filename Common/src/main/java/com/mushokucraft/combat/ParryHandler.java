@@ -29,7 +29,7 @@ public class ParryHandler {
             return;
         }
         ItemStack stack = player.getMainHandItem();
-        if (!(stack.getItem() instanceof SwordItem)) {
+        if (!SwordCombatHelper.isSword(stack)) {
             return;
         }
         if (player.getCooldowns().isOnCooldown(stack.getItem())) {

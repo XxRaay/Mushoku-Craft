@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "mushokucraft:modular_sword",
+    "mushokucraft:modular_greatsword",
+    "mushokucraft:modular_scythe",
+    "mushokucraft:modular_dagger",
+    "mushokucraft:modular_katana",
+    "mushokucraft:modular_rapier"
+  ]
+}

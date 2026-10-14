@@ -238,6 +238,7 @@ public class MushokuConfig {
     public static final ConfigValue<Double> SWORD_GOD_SPEED_BONUS = new ConfigValue<>(1.5);
     public static final ConfigValue<Double> SWORD_GOD_REACH_BONUS = new ConfigValue<>(1.5);
     public static final ConfigValue<Integer> CARCASS_MAX_USES = new ConfigValue<>(3);
+    public static final ConfigValue<Boolean> ALLOW_ALL_MELEE_WEAPONS_FOR_STANCES = new ConfigValue<>(true);
 
     // Melee vs Magic Matchup Rule: Melee hits disrupt active chanting
     public static final ConfigValue<Boolean> CAST_INTERRUPTION_ON_MELEE = new ConfigValue<>(true);

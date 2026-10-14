@@ -79,7 +79,7 @@ public class ModGameEvents {
                     }
                 }
 
-                if (data.getActiveStance() == SwordStyle.SWORD_GOD && player2.getMainHandItem().getItem() instanceof SwordItem && !(offhand = player2.getOffhandItem()).isEmpty()) {
+                if (data.getActiveStance() == SwordStyle.SWORD_GOD && com.mushokucraft.combat.SwordCombatHelper.isSword(player2.getMainHandItem()) && !(offhand = player2.getOffhandItem()).isEmpty()) {
                     ItemStack toReturn = offhand.copy();
                     player2.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
                     if (!player2.getInventory().add(toReturn)) {

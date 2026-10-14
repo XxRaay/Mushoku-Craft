@@ -1,10 +1,8 @@
 package com.mushokucraft.item;
 
-import com.mushokucraft.client.gui.MagicCanvasScreen;
 import com.mushokucraft.magic.circle.MagicCirclePattern;
-import dev.architectury.platform.Platform;
-import net.fabricmc.api.EnvType;
-import net.minecraft.client.Minecraft;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -85,16 +83,11 @@ public class BlankCanvasItem extends Item {
         if (level.isClientSide()) {
             MagicCirclePattern draft = getDraftPattern(held);
             int spent = getSpentInkSacs(held);
-            openCanvasScreen(hand == InteractionHand.MAIN_HAND, draft, spent);
+            boolean isMainHand = hand == InteractionHand.MAIN_HAND;
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.mushokucraft.client.gui.ClientScreenOpener.openCanvasScreen(isMainHand, draft, spent));
         }
 
         return InteractionResultHolder.sidedSuccess(held, level.isClientSide());
-    }
-
-    private void openCanvasScreen(boolean isMainHand, MagicCirclePattern draft, int spent) {
-        if (Platform.getEnv() == EnvType.CLIENT) {
-            Minecraft.getInstance().setScreen(new MagicCanvasScreen(isMainHand, draft, spent));
-        }
     }
 
     @Override

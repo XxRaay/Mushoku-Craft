@@ -82,10 +82,18 @@ public class CombatInputHandler {
                 if (ClientSpellState.selectedSpell != null) {
                     String spellName = ClientSpellState.selectedSpell.getPath();
                     if (spellName.equals("longsword_light")) {
+                        ItemStack mainHand = mc.player.getMainHandItem();
+                        if (mc.player.getCooldowns().isOnCooldown(mainHand.getItem())) {
+                            return EventResult.interruptFalse();
+                        }
                         NetworkManager.sendToServer(new StartChargePacket(ClientSpellState.selectedSpell));
                         return EventResult.interruptFalse();
                     }
                     if (spellName.equals("longsword_of_silence")) {
+                        ItemStack mainHand = mc.player.getMainHandItem();
+                        if (mc.player.getCooldowns().isOnCooldown(mainHand.getItem())) {
+                            return EventResult.interruptFalse();
+                        }
                         NetworkManager.sendToServer(new StartChargePacket(ClientSpellState.selectedSpell));
                         CombatInputHandler.startPlayerAnimation("longsword_of_silence");
                         return EventResult.interruptFalse();
@@ -93,7 +101,7 @@ public class CombatInputHandler {
                 }
                 SwordStyle stance = ClientStanceState.selectedStance;
                 ItemStack mainHand = mc.player.getMainHandItem();
-                if (stance == SwordStyle.WATER_GOD && mainHand.getItem() instanceof SwordItem && !mc.player.getCooldowns().isOnCooldown(mainHand.getItem())) {
+                if (stance == SwordStyle.WATER_GOD && com.mushokucraft.combat.SwordCombatHelper.isSword(mainHand) && !mc.player.getCooldowns().isOnCooldown(mainHand.getItem())) {
                     mc.player.getCooldowns().addCooldown(mainHand.getItem(), 40);
                     CombatInputHandler.playParryAnimation();
                     NetworkManager.sendToServer(new TriggerParryPacket());
@@ -142,7 +150,7 @@ public class CombatInputHandler {
                 animationPlayer = null;
                 lastStance = null;
             }
-            SwordStyle swordStyle = currentStance = (holdingSword = mc.player.getMainHandItem().getItem() instanceof SwordItem) ? ClientStanceState.selectedStance : null;
+            SwordStyle swordStyle = currentStance = (holdingSword = com.mushokucraft.combat.SwordCombatHelper.isSword(mc.player.getMainHandItem())) ? ClientStanceState.selectedStance : null;
             if (currentStance != lastStance) {
                 lastStance = currentStance;
                 if (currentStance == null) {

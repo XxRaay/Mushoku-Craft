@@ -2,7 +2,6 @@ package com.mushokucraft.network;
 
 import com.mushokucraft.data.PlayerMasteryData;
 import com.mushokucraft.data.PlayerMasteryProvider;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;

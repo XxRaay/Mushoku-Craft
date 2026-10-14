@@ -72,7 +72,7 @@ public class SwordCombatHandler {
                 mastery.parryTicks--;
             }
 
-            boolean holdingSword = player.getMainHandItem().getItem() instanceof SwordItem;
+            boolean holdingSword = SwordCombatHelper.isSword(player.getMainHandItem());
             SwordStyle stance = mastery.getActiveStance();
             boolean isToukiActive = mastery.isToukiActive() && holdingSword && stance != null;
             float stanceMastery = mastery.getStanceMastery(stance);
@@ -116,7 +116,7 @@ public class SwordCombatHandler {
             SwordStyle stance = mastery.getActiveStance();
 
             if (stance == SwordStyle.SWORD_GOD && hand == net.minecraft.world.InteractionHand.OFF_HAND) {
-                if (player.getMainHandItem().getItem() instanceof SwordItem) {
+                if (SwordCombatHelper.isSword(player.getMainHandItem())) {
                     return dev.architectury.event.CompoundEventResult.interruptFalse(null);
                 }
             }
@@ -126,7 +126,7 @@ public class SwordCombatHandler {
         InteractionEvent.INTERACT_ENTITY.register((player, entity, hand) -> {
             PlayerMasteryData mastery = PlayerMasteryProvider.get(player);
             if (mastery != null && mastery.getActiveStance() == SwordStyle.SWORD_GOD && hand == net.minecraft.world.InteractionHand.OFF_HAND) {
-                if (player.getMainHandItem().getItem() instanceof SwordItem) {
+                if (SwordCombatHelper.isSword(player.getMainHandItem())) {
                     return EventResult.interruptFalse();
                 }
             }
@@ -136,7 +136,7 @@ public class SwordCombatHandler {
         InteractionEvent.RIGHT_CLICK_BLOCK.register((player, hand, pos, face) -> {
             PlayerMasteryData mastery = PlayerMasteryProvider.get(player);
             if (mastery != null && mastery.getActiveStance() == SwordStyle.SWORD_GOD && hand == net.minecraft.world.InteractionHand.OFF_HAND) {
-                if (player.getMainHandItem().getItem() instanceof SwordItem) {
+                if (SwordCombatHelper.isSword(player.getMainHandItem())) {
                     return EventResult.interruptFalse();
                 }
             }
@@ -149,7 +149,7 @@ public class SwordCombatHandler {
             if (source.getEntity() instanceof Player attacker) {
                 PlayerMasteryData mastery = PlayerMasteryProvider.get(attacker);
                 if (mastery != null) {
-                    if (attacker instanceof net.minecraft.server.level.ServerPlayer sp && attacker.getMainHandItem().getItem() instanceof SwordItem && mastery.getActiveStance() != null) {
+                    if (attacker instanceof net.minecraft.server.level.ServerPlayer sp && SwordCombatHelper.isSword(attacker.getMainHandItem()) && mastery.getActiveStance() != null) {
                         boolean isDummy = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getPath().contains("dummy");
                         if (isDummy) {
                             com.mushokucraft.event.ModGameEvents.addStanceMastery(sp, mastery.getActiveStance(), MushokuConfig.DUMMY_MASTERY_GAIN.get().floatValue());

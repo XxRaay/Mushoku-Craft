@@ -2,7 +2,6 @@ package com.mushokucraft.network;
 
 import com.mushokucraft.data.PlayerMasteryData;
 import com.mushokucraft.data.PlayerMasteryProvider;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;

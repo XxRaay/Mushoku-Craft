@@ -1,18 +1,17 @@
 package com.mushokucraft.network;
 
-import com.mushokucraft.client.network.ClientPayloadHandler;
 import dev.architectury.networking.NetworkManager;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.server.level.ServerPlayer;
 
 public class ModNetworking {
 
     public static void register() {
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncManaPacket.TYPE, SyncManaPacket.STREAM_CODEC, (packet, context) -> {
-            context.queue(() -> ClientPayloadHandler.handleSyncMana(packet));
-        });
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, CastStartedPacket.TYPE, CastStartedPacket.STREAM_CODEC, (packet, context) -> {
-            context.queue(() -> ClientPayloadHandler.handleCastStarted(packet));
-        });
+        // Register client receivers on client environment only
+        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.mushokucraft.client.network.ClientNetworking.register());
+
+        // Server receivers (C2S)
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, CastSpellPacket.TYPE, CastSpellPacket.STREAM_CODEC, (packet, context) -> {
             if (context.getPlayer() instanceof ServerPlayer sp) {
                 context.queue(() -> packet.handle(sp));
@@ -33,19 +32,10 @@ public class ModNetworking {
                 context.queue(() -> packet.handle(sp));
             }
         });
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, LearnSpellSyncPacket.TYPE, LearnSpellSyncPacket.STREAM_CODEC, (packet, context) -> {
-            context.queue(() -> ClientPayloadHandler.handleLearnSpellSync(packet));
-        });
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, QteTriggerPacket.TYPE, QteTriggerPacket.STREAM_CODEC, (packet, context) -> {
-            context.queue(() -> ClientPayloadHandler.handleQteTrigger(packet));
-        });
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, QteResultPacket.TYPE, QteResultPacket.STREAM_CODEC, (packet, context) -> {
             if (context.getPlayer() instanceof ServerPlayer sp) {
                 context.queue(() -> packet.handle(sp));
             }
-        });
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, LearnSpellResultPacket.TYPE, LearnSpellResultPacket.STREAM_CODEC, (packet, context) -> {
-            context.queue(() -> ClientPayloadHandler.handleLearnSpellResult(packet));
         });
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, ChangeStancePacket.TYPE, ChangeStancePacket.STREAM_CODEC, (packet, context) -> {
             if (context.getPlayer() instanceof ServerPlayer sp) {
@@ -62,22 +52,10 @@ public class ModNetworking {
                 context.queue(() -> packet.handle(sp));
             }
         });
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncToukiPacket.TYPE, SyncToukiPacket.STREAM_CODEC, (packet, context) -> {
-            context.queue(() -> ClientPayloadHandler.handleSyncTouki(packet));
-        });
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, ToggleAirCushionPacket.TYPE, ToggleAirCushionPacket.STREAM_CODEC, (packet, context) -> {
             if (context.getPlayer() instanceof ServerPlayer sp) {
                 context.queue(() -> packet.handleServer(sp));
             }
-        });
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncAirCushionPacket.TYPE, SyncAirCushionPacket.STREAM_CODEC, (packet, context) -> {
-            context.queue(() -> packet.handleClient());
-        });
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncFullMasteryPacket.TYPE, SyncFullMasteryPacket.STREAM_CODEC, (packet, context) -> {
-            context.queue(() -> ClientPayloadHandler.handleSyncFullMastery(packet));
-        });
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, MasteryGainedPacket.TYPE, MasteryGainedPacket.STREAM_CODEC, (packet, context) -> {
-            context.queue(() -> ClientPayloadHandler.handleMasteryGained(packet));
         });
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, InscribeCanvasPacket.TYPE, InscribeCanvasPacket.STREAM_CODEC, (packet, context) -> {
             if (context.getPlayer() instanceof ServerPlayer sp) {
@@ -94,9 +72,6 @@ public class ModNetworking {
                 context.queue(() -> packet.handle(sp));
             }
         });
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncMagicCirclesPacket.TYPE, SyncMagicCirclesPacket.STREAM_CODEC, (packet, context) -> {
-            context.queue(() -> packet.handleClient());
-        });
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, ForgeWeaponPacket.TYPE, ForgeWeaponPacket.STREAM_CODEC, (packet, context) -> {
             if (context.getPlayer() instanceof ServerPlayer sp) {
                 context.queue(() -> packet.handle(sp));
@@ -107,9 +82,5 @@ public class ModNetworking {
                 context.queue(() -> packet.handle(sp));
             }
         });
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, CastEndedPacket.TYPE, CastEndedPacket.STREAM_CODEC, (packet, context) -> {
-            context.queue(() -> ClientPayloadHandler.handleCastEnded(packet));
-        });
     }
 }
-

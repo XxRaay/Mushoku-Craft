@@ -126,12 +126,23 @@ public class ServerChargeManager {
     }
 
     public static void startCharge(ServerPlayer player, ResourceLocation spellId) {
-        buttonHeldPlayers.add(player.getUUID());
         Spell spell = ModSpells.SPELLS.get(spellId);
         if (spell == null) {
             return;
         }
         PlayerMasteryData data = (PlayerMasteryData)PlayerMasteryProvider.get(player);
+
+        // Sword Arts (Sword God Style techniques) are executed directly as martial skills, not casted magic spells
+        if (spell.getSchool() == MagicSchool.SWORD_ARTS || spellId.getPath().equals("longsword_light") || spellId.getPath().equals("longsword_of_silence")) {
+            if (spellId.getPath().equals("longsword_light")) {
+                ServerChargeManager.handleLongswordLight(player, data, spell.getEffectiveManaCost(data));
+            } else if (spellId.getPath().equals("longsword_of_silence")) {
+                ServerChargeManager.handleLongswordOfSilence(player, data);
+            }
+            return;
+        }
+
+        buttonHeldPlayers.add(player.getUUID());
         float spellMastery = data.getSpellMastery(spellId);
         if (spellMastery < 1.0f) {
             float manaCost = spell.getEffectiveManaCost(data);
@@ -142,7 +153,7 @@ public class ServerChargeManager {
             float castReduction = com.mushokucraft.accessory.AccessoryHelper.getCastTimeReduction(player);
             boolean immune = com.mushokucraft.accessory.AccessoryHelper.isFizzleImmune(player);
             float castTimeTicks = spell.getCastTime(spellMastery);
-            int effectiveCastTime = Math.max(5, (int)(castTimeTicks * (1.0f - castReduction)));
+            int effectiveCastTime = castTimeTicks > 0 ? Math.max(5, (int)(castTimeTicks * (1.0f - castReduction))) : 0;
             int fizzleTick = -1;
             if (effectiveCastTime > 0) {
                 if (!immune) {
@@ -154,10 +165,6 @@ public class ServerChargeManager {
                 }
                 ServerCastManager.startCast(player, spell, effectiveCastTime, fizzleTick);
                 NetworkManager.sendToPlayer((ServerPlayer)player, (CustomPacketPayload)new CastStartedPacket(spell.getId(), effectiveCastTime, fizzleTick));
-            } else if (spellId.getPath().equals("longsword_light")) {
-                ServerChargeManager.handleLongswordLight(player, data, manaCost);
-            } else if (spellId.getPath().equals("longsword_of_silence")) {
-                ServerChargeManager.handleLongswordOfSilence(player, data);
             } else {
                 ServerChargeManager.handleInstantProjectileCast(player, spell, data, manaCost);
             }
@@ -169,6 +176,13 @@ public class ServerChargeManager {
         float initialCost = spell.getEffectiveManaCost(data);
         if (!data.consumeMana(initialCost)) {
             player.displayClientMessage(Component.translatable("message.mushokucraft.not_enough_mana"), true);
+            return;
+        }
+        if (spell.getProjectileFactory() == null) {
+            if (spell.getSpellAction() != null) {
+                spell.getSpellAction().execute(player.level(), player, spell);
+            }
+            ModGameEvents.syncMana(player, data);
             return;
         }
         Projectile magicProjectile = spell.getProjectileFactory().create(player.level(), player);
@@ -196,7 +210,7 @@ public class ServerChargeManager {
             player.displayClientMessage((Component)Component.translatable((String)"message.mushokucraft.requires_max_mastery"), true);
             return;
         }
-        if (!(player.getMainHandItem().getItem() instanceof SwordItem)) {
+        if (!com.mushokucraft.combat.SwordCombatHelper.isSword(player.getMainHandItem())) {
             player.displayClientMessage((Component)Component.translatable((String)"message.mushokucraft.requires_sword"), true);
             return;
         }
@@ -207,6 +221,7 @@ public class ServerChargeManager {
             player.displayClientMessage((Component)Component.translatable((String)"message.mushokucraft.not_enough_mana"), true);
             return;
         }
+        ModGameEvents.syncMana(player, data);
         Level level = player.level();
         Vec3 look = player.getLookAngle();
         DashResult dash = ServerChargeManager.performDash(player, (Double)MushokuConfig.LONGSWORD_LIGHT_DASH_DISTANCE.get());
@@ -240,11 +255,16 @@ public class ServerChargeManager {
             player.displayClientMessage((Component)Component.translatable((String)"message.mushokucraft.requires_sword_god_stance"), true);
             return;
         }
+        if (data.getStanceMastery(SwordStyle.SWORD_GOD) < 0.99f) {
+            player.displayClientMessage((Component)Component.translatable((String)"message.mushokucraft.requires_max_mastery"), true);
+            return;
+        }
         if (!data.hasUnlockedLongswordOfSilence()) {
             player.displayClientMessage((Component)Component.translatable((String)"message.mushokucraft.spell_not_unlocked"), true);
             return;
         }
-        if (!(player.getMainHandItem().getItem() instanceof SwordItem)) {
+        if (!com.mushokucraft.combat.SwordCombatHelper.isSword(player.getMainHandItem())) {
+            player.displayClientMessage((Component)Component.translatable((String)"message.mushokucraft.requires_sword"), true);
             return;
         }
         if (player.getCooldowns().isOnCooldown(player.getMainHandItem().getItem())) {
@@ -265,6 +285,11 @@ public class ServerChargeManager {
         if (data.consumeMana(manaCost)) {
             if (spell.getSpellAction() != null) {
                 spell.getSpellAction().execute(player.level(), player, spell);
+            } else if (spell.getProjectileFactory() != null) {
+                Projectile projectile = spell.getProjectileFactory().create(player.level(), player);
+                if (projectile != null) {
+                    player.level().addFreshEntity(projectile);
+                }
             }
             data.addSpellMastery(spell.getId(), ((Double)MushokuConfig.SPELL_MASTERY_PER_CAST.get()).floatValue());
             float rankMult = spell.getRank() != null ? spell.getRank().getSchoolXpMultiplier() : 1.0f;

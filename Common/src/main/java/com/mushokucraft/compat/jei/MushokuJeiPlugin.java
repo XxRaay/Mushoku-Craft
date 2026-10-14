@@ -19,6 +19,9 @@ import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.registration.IRecipeTransferRegistration;
+import com.mushokucraft.crafting.ModularAnvilMenu;
+import com.mushokucraft.init.ModMenuTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -193,6 +196,12 @@ public class MushokuJeiPlugin implements IModPlugin {
 
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-        registration.addRecipeClickArea(ModularAnvilScreen.class, 162, 19, 54, 18, ModularAnvilCategory.RECIPE_TYPE);
+        // Place click area over the arrow between workstation and result slot (not over Forge button)
+        registration.addRecipeClickArea(ModularAnvilScreen.class, 159, 56, 22, 16, ModularAnvilCategory.RECIPE_TYPE);
+    }
+
+    @Override
+    public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
+        registration.addRecipeTransferHandler(ModularAnvilMenu.class, ModMenuTypes.MODULAR_ANVIL.get(), ModularAnvilCategory.RECIPE_TYPE, 0, 4, 5, 36);
     }
 }

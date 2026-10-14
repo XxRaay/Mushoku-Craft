@@ -9,10 +9,9 @@ import com.mushokucraft.magic.circle.MagicCircleType;
 import com.mushokucraft.magic.circle.TeleportCircleType;
 import com.mushokucraft.network.SyncFullMasteryPacket;
 import dev.architectury.networking.NetworkManager;
-import dev.architectury.platform.Platform;
-import net.fabricmc.api.EnvType;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -75,16 +74,10 @@ public class AncientManuscriptItem extends Item {
                 level.playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7f, 1.4f);
             }
         } else {
-            openScreen(circleType);
+            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> com.mushokucraft.client.gui.ClientScreenOpener.openAncientManuscriptScreen(circleType));
         }
 
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
-    }
-
-    private void openScreen(ResourceLocation circleTypeId) {
-        if (Platform.getEnv() == EnvType.CLIENT) {
-            Minecraft.getInstance().setScreen(new AncientManuscriptScreen(circleTypeId));
-        }
     }
 
     @Override

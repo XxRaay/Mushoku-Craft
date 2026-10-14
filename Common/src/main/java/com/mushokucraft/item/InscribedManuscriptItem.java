@@ -567,20 +567,10 @@ public class InscribedManuscriptItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ResourceLocation circleTypeId = getCircleTypeId(stack);
         if (circleTypeId != null) {
-            boolean isStudied = false;
-            if (dev.architectury.platform.Platform.getEnv() == net.fabricmc.api.EnvType.CLIENT) {
-                Player clientPlayer = net.minecraft.client.Minecraft.getInstance().player;
-                if (clientPlayer != null) {
-                    if (clientPlayer.isCreative()) {
-                        isStudied = true;
-                    } else {
-                        com.mushokucraft.data.PlayerMasteryData data = com.mushokucraft.data.PlayerMasteryProvider.get(clientPlayer);
-                        if (data != null && data.isCircleStudied(circleTypeId)) {
-                            isStudied = true;
-                        }
-                    }
-                }
-            }
+            boolean isStudied = dev.architectury.utils.EnvExecutor.getInEnv(
+                    dev.architectury.utils.Env.CLIENT,
+                    () -> () -> com.mushokucraft.client.gui.ClientScreenOpener.isCircleStudiedClient(circleTypeId)
+            ).orElse(false);
 
             if (isStudied) {
                 MagicCircleType circleType = MagicCircleRegistry.get(circleTypeId);

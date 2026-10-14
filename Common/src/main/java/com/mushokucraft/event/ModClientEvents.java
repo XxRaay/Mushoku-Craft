@@ -74,7 +74,7 @@ public class ModClientEvents {
         if (event.getHand() == InteractionHand.OFF_HAND) {
             PlayerMasteryData mastery;
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null && (mastery = (PlayerMasteryData)PlayerMasteryProvider.get(mc.player)) != null && mastery.getActiveStance() == SwordStyle.SWORD_GOD && mc.player.getMainHandItem().getItem() instanceof SwordItem) {
+            if (mc.player != null && (mastery = (PlayerMasteryData)PlayerMasteryProvider.get(mc.player)) != null && mastery.getActiveStance() == SwordStyle.SWORD_GOD && com.mushokucraft.combat.SwordCombatHelper.isSword(mc.player.getMainHandItem())) {
                 event.setCanceled(true);
             }
         }

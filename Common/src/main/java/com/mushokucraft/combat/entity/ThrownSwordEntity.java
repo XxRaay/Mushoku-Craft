@@ -68,6 +68,18 @@ public class ThrownSwordEntity extends ThrowableItemProjectile {
                     damage += com.mushokucraft.weapon.modular.ModularWeaponItem.getWeaponDamage(swordStack) * 0.6f;
                 } else if (swordStack.getItem() instanceof net.minecraft.world.item.TieredItem ti) {
                     damage += (ti.getTier().getAttackDamageBonus() + 3.0f) * 0.6f;
+                } else {
+                    float attackDamage = 4.0f;
+                    net.minecraft.world.item.component.ItemAttributeModifiers attr = swordStack.get(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS);
+                    if (attr != null) {
+                        for (var entry : attr.modifiers()) {
+                            if (entry.attribute().value() == net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE.value()) {
+                                attackDamage = (float) entry.modifier().amount();
+                                break;
+                            }
+                        }
+                    }
+                    damage += attackDamage * 0.6f;
                 }
                 target.hurt(this.damageSources().thrown(this, owner), damage);
                 target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, MushokuConfig.NORTH_GOD_SLOW_DURATION.get(), 1));

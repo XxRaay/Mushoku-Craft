@@ -14,14 +14,15 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class VillageStructureInjector {
-    private static final List<ResourceLocation> VILLAGE_HOUSE_POOLS = List.of(
-            ResourceLocation.withDefaultNamespace("village/plains/houses"),
-            ResourceLocation.withDefaultNamespace("village/taiga/houses"),
-            ResourceLocation.withDefaultNamespace("village/savanna/houses"),
-            ResourceLocation.withDefaultNamespace("village/snowy/houses"),
-            ResourceLocation.withDefaultNamespace("village/desert/houses")
+    private static final Map<ResourceLocation, String> BIOME_HOUSE_TEMPLATES = Map.of(
+            ResourceLocation.withDefaultNamespace("village/plains/houses"), "mushokucraft:village/houses/mage_house_plains",
+            ResourceLocation.withDefaultNamespace("village/taiga/houses"), "mushokucraft:village/houses/mage_house_taiga",
+            ResourceLocation.withDefaultNamespace("village/savanna/houses"), "mushokucraft:village/houses/mage_house_savanna",
+            ResourceLocation.withDefaultNamespace("village/snowy/houses"), "mushokucraft:village/houses/mage_house_snowy",
+            ResourceLocation.withDefaultNamespace("village/desert/houses"), "mushokucraft:village/houses/mage_house_desert"
     );
 
     public static void register() {
@@ -32,13 +33,14 @@ public class VillageStructureInjector {
             int weight = MushokuConfig.MAGE_HOUSE_VILLAGE_WEIGHT.get();
             if (weight <= 0) return;
 
-            StructurePoolElement mageHouseElement = StructurePoolElement.legacy("mushokucraft:village/houses/mage_house")
-                    .apply(StructureTemplatePool.Projection.RIGID);
-
-            for (ResourceLocation poolId : VILLAGE_HOUSE_POOLS) {
+            for (Map.Entry<ResourceLocation, String> entry : BIOME_HOUSE_TEMPLATES.entrySet()) {
+                ResourceLocation poolId = entry.getKey();
+                String templatePath = entry.getValue();
                 StructureTemplatePool pool = poolRegistry.get(poolId);
                 if (pool != null) {
-                    injectPiece(pool, mageHouseElement, weight, poolId);
+                    StructurePoolElement element = StructurePoolElement.legacy(templatePath)
+                            .apply(StructureTemplatePool.Projection.RIGID);
+                    injectPiece(pool, element, weight, poolId);
                 }
             }
         });
